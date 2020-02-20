@@ -10,7 +10,7 @@ from Logger import log
 class ClipMonitor:
     
 
-    triggers = {'bang':12.0}  # a dictionary of events we want to fire at certain distances from the end of the clip
+    triggers = {'self.fire_scene()':4.0}  # a dictionary of events we want to fire at certain distances from the end of the clip
     clip_listener = {}
     end_time = 0.0
 
@@ -24,14 +24,9 @@ class ClipMonitor:
         log("Clip Monitor initialized on Track " + str(trackID))
 
 
-    def clip_position(self, clip, tid, cid):
-        if clip.is_playing:
-        	print("clip is playing")
-            #self.oscEndpoint.send('/live/clip/position', (tid, cid, clip.playing_position, clip.length, clip.loop_start, clip.loop_end))
-
-
     def slot_changed(self):
         slot_index = self.track.playing_slot_index
+        self.playing_scene_index = slot_index
         #if slot_index == -2:  #no slot playing
         #log("Playing Slot Index: " + str(slot_index))
 
@@ -65,3 +60,12 @@ class ClipMonitor:
                     if clip.loop_end <= (clip.playing_position + self.active_triggers[trigger]):
                         del self.active_triggers[trigger]
                         log(str(trigger))
+                        eval(str(trigger))
+
+    def fire_scene(self):
+        if self.playMode == 'next':
+            next_index = int(self.playing_scene_index) + 1
+            LiveUtils.getScene(next_index).fire()
+
+
+
