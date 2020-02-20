@@ -21,23 +21,28 @@ class ClipMonitor:
         callback = lambda : self.slot_changed()
         self.track.add_playing_slot_index_listener(callback)
         self.playMode = 'next'
-        log("Clip Monitor initialized on track " + str(trackID))
+        log("Clip Monitor initialized on Track " + str(trackID))
+
 
     def clip_position(self, clip, tid, cid):
         if clip.is_playing:
         	print("clip is playing")
             #self.oscEndpoint.send('/live/clip/position', (tid, cid, clip.playing_position, clip.length, clip.loop_start, clip.loop_end))
 
+
     def slot_changed(self):
         slot_index = self.track.playing_slot_index
         #if slot_index == -2:  #no slot playing
-        log("Playing Slot Index: " + str(slot_index))
+        #log("Playing Slot Index: " + str(slot_index))
+
+        #  CLEAN UP ANY OLD LISTENERS
         if len(self.clip_listener) > 0:
             for old_clip in self.clip_listener:
                 if old_clip.playing_position_has_listener(self.clip_listener[old_clip]) == 1:
                     old_clip.remove_playing_position_listener(self.clip_listener[old_clip])
             self.clip_listener = {}
         
+        #MAKE SURE WE HAVE A CLIP AND ASSIGN A PLAYING POSITION LISTENER TO IT
         slot = self.track.clip_slots[slot_index]
         if slot.has_clip:
     	    clip = slot.clip
@@ -47,14 +52,16 @@ class ClipMonitor:
                 self.clip_listener[clip] = callback
                 clip.add_playing_position_listener(callback)
                 log(str(clip.name))
+                self.active_triggers = self.triggers.copy()
         else:
-            log("no clip playing")
+            log("No Clip Playing in Track " + str(self.trackID))
             self.clip_listener = {}
+
 
     def playing_position(self):
         for clip in self.clip_listener:
             if len(self.triggers) > 0:
-                for trigger in list(self.triggers):
-                    if clip.loop_end <= (clip.playing_position + self.triggers[trigger]):
-                        del self.triggers[trigger]
+                for trigger in list(self.active_triggers):
+                    if clip.loop_end <= (clip.playing_position + self.active_triggers[trigger]):
+                        del self.active_triggers[trigger]
                         log(str(trigger))
