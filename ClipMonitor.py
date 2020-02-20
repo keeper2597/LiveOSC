@@ -1,28 +1,23 @@
-"""
-    Here is dir(ClipMonitorObject):
-    ['__doc__', '__init__', '__module__', 'clip_position', 'playMode', 'slot', 'slot_changed', 'track', 'trackID', 'triggers']
-"""
+
 
 import LiveUtils
 from Logger import log
 
+playMode = "next"
 
 class ClipMonitor:
     
-
     triggers = {'self.fire_scene()':4.0}  # a dictionary of events we want to fire at certain distances from the end of the clip
     clip_listener = {}
-    end_time = 0.0
+    trackID = 0
 
+    
     def __init__(self, trackID):
-        
         self.trackID = trackID
         self.track = LiveUtils.getTrack(self.trackID)
         callback = lambda : self.slot_changed()
         self.track.add_playing_slot_index_listener(callback)
-        self.playMode = 'next'
-        log("Clip Monitor initialized on Track " + str(trackID))
-
+        log("Clip Monitor initialized on Track " + str(self.trackID))
 
     def slot_changed(self):
         slot_index = self.track.playing_slot_index
@@ -63,9 +58,13 @@ class ClipMonitor:
                         eval(str(trigger))
 
     def fire_scene(self):
-        if self.playMode == 'next':
+        log("PlayMode: " + str(playMode))
+        if playMode == 'next':
             next_index = int(self.playing_scene_index) + 1
             LiveUtils.getScene(next_index).fire()
+        elif playMode == 'repeat':
+            LiveUtils.getScene(self.playing_scene_index).fire()
+
 
 
 

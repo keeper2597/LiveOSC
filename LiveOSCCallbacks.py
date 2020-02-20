@@ -25,6 +25,7 @@ import Live
 import RemixNet
 import OSC
 import LiveUtils
+import ClipMonitor
 import sys
 import re
 import time
@@ -146,7 +147,14 @@ class LiveOSCCallbacks:
         self.callbackManager.add("/live/distribute_groups", self.distributeGroupsCB)
         self.callbackManager.add("/live/play/group_scene", self.playGroupSceneCB)
 
+        self.callbackManager.add("/live/playMode", self.setPlayModeCB)
+
         self.clip_notes_cache = {}
+
+    def setPlayModeCB(self, msg, source):
+        ClipMonitor.playMode = str(msg[2])
+        self.oscEndpoint.send("/live/playMode", msg[2])
+
 
     def sigCB(self, msg, source):
         """ Called when a /live/clip/signature message is recieved
