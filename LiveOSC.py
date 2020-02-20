@@ -32,6 +32,7 @@ import LiveOSCCallbacks
 import RemixNet
 import OSC
 import LiveUtils
+import ClipMonitor
 import sys
 from Logger import log
 
@@ -56,6 +57,7 @@ class LiveOSC:
     scene = 0
     track = 0
 
+
     def __init__(self, c_instance):
         self._LiveOSC__c_instance = c_instance
       
@@ -64,15 +66,26 @@ class LiveOSC:
         self.oscEndpoint.send('/remix/oscserver/startup', 1)
         
         log("LiveOSC initialized")
+
+        self.clipMonitor = ClipMonitor.ClipMonitor(0)
+
+        #log(dir(Live.Song))
+
+        #log(dir(Live.Song.BeatTime))
+
+        #log(dir(Live.Application.get_application().view))
+
+        # for x in Live.Application.get_application().view.available_main_views():
+        #     log(x)
         
         # Visible tracks listener
-        if self.song().tracks_has_listener(self.refresh_state) != 1:
-            self.song().add_tracks_listener(self.refresh_state)
+        #if self.song().tracks_has_listener(self.refresh_state) != 1:
+        #    self.song().add_tracks_listener(self.refresh_state)
         
 ######################################################################
 # Standard Ableton Methods
 
-    def connect_script_instances(self, instanciated_scripts):
+    def connect_script_instances(self, instantiated_scripts):
         """
         Called by the Application as soon as all scripts are initialized.
         You can connect yourself to other running scripts here, as we do it
@@ -223,13 +236,13 @@ class LiveOSC:
         self.refresh_state()            
             
     def refresh_state(self):
-        self.add_clip_listeners()
-        self.add_mixer_listeners()
+        #self.add_clip_listeners()
+        #self.add_mixer_listeners()
         self.add_scene_listeners()
         self.add_tempo_listener()
-        self.add_overdub_listener()
+        #self.add_overdub_listener()
         self.add_tracks_listener()
-        self.add_device_listeners()
+        #self.add_device_listeners()
         self.add_transport_listener()
 
         trackNumber = 0

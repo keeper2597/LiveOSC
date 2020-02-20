@@ -53,6 +53,7 @@ class LiveOSCCallbacks:
         self.callbackManager.add("/live/stop/track", self.stopTrackCB)
         self.callbackManager.add("/live/scenes", self.scenesCB)
         self.callbackManager.add("/live/tracks", self.tracksCB)
+
         self.callbackManager.add("/live/name/scene", self.nameSceneCB)
         self.callbackManager.add("/live/scene", self.sceneCB)
         self.callbackManager.add("/live/name/sceneblock", self.nameSceneBlockCB)
@@ -1085,10 +1086,20 @@ class LiveOSCCallbacks:
             clip  = msg[3]
         else:
             clip  = 0
-        
+
+        Live.Application.get_application().view.focus_view("Session")
+
+        Live.Application.get_application().view.hide_view("Browser")
+        Live.Application.get_application().view.hide_view("Detail")
+
         LiveUtils.getSong().view.selected_track = track
-        LiveUtils.getSong().view.detail_clip = track.clip_slots[clip].clip
-        Live.Application.get_application().view.show_view("Detail/Clip")  
+        LiveUtils.getSong().view.highlighted_clip_slot = track.clip_slots[clip]
+        
+        #LiveUtils.getSong().view.detail_clip = track.clip_slots[clip].clip
+        # Live.Application.get_application().view.show_view("Detail/Clip")
+
+        self.oscEndpoint.send("/live/clip/highlighted", (msg[2], msg[3]))
+        
 
     def detailViewCB(self, msg, source):
         """Called when a /live/detail/view message is received. Used to switch between clip/track detail
@@ -1182,7 +1193,7 @@ class LiveOSCCallbacks:
         """Called when a /live/clip/mute message is received.
         
         Messages:
-        /live/clip/view     (int track, int clip)      Selects a clip to mute.
+        /live/clip/mute     (int track, int clip)      Selects a clip to mute.
         """
         # use LogServer.py to read logs
         # log("muting")
