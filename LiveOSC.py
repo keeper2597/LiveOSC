@@ -36,6 +36,8 @@ import ClipMonitor
 import sys
 from Logger import log
 
+debug = LiveUtils.debug
+
 class LiveOSC:
     __module__ = __name__
     __doc__ = "Main class that establishes the LiveOSC Component"

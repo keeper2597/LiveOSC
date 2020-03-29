@@ -20,6 +20,8 @@
 # Rob King <rob@e-mu.org> or visit http://www.e-mu.org
 """
 
+debug = False
+
 import Live
 
 def getSong():

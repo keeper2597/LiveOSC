@@ -33,6 +33,8 @@ import time
 from Logger import log
 
 
+debug = LiveUtils.debug
+
 class LiveOSCCallbacks:
     def __init__(self, c_instance, oscEndpoint):
         self.oscEndpoint = oscEndpoint
@@ -154,6 +156,8 @@ class LiveOSCCallbacks:
     def setPlayModeCB(self, msg, source):
         ClipMonitor.playMode = str(msg[2])
         self.oscEndpoint.send("/live/playMode", msg[2])
+        if debug:
+            log("setPlayModeCB called by OSC with message: " + str(msg[2]))
 
 
     def sigCB(self, msg, source):

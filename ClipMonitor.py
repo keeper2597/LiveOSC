@@ -4,10 +4,12 @@ import LiveUtils
 from Logger import log
 
 playMode = "next"
+triggers = {'self.fire_scene()':4.0, 'self.cue_count()':5.0}  # a dictionary of events we want to fire at certain distances from the end of the clip
+
+debug = LiveUtils.debug
 
 class ClipMonitor:
     
-    triggers = {'self.fire_scene()':4.0}  # a dictionary of events we want to fire at certain distances from the end of the clip
     clip_listener = {}
     trackID = 0
 
@@ -18,6 +20,7 @@ class ClipMonitor:
         callback = lambda : self.slot_changed()
         self.track.add_playing_slot_index_listener(callback)
         log("Clip Monitor initialized on Track " + str(self.trackID))
+
 
     def slot_changed(self):
         slot_index = self.track.playing_slot_index
@@ -42,7 +45,7 @@ class ClipMonitor:
                 self.clip_listener[clip] = callback
                 clip.add_playing_position_listener(callback)
                 log(str(clip.name))
-                self.active_triggers = self.triggers.copy()
+                self.active_triggers = triggers.copy()
         else:
             log("No Clip Playing in Track " + str(self.trackID))
             self.clip_listener = {}
@@ -50,7 +53,7 @@ class ClipMonitor:
 
     def playing_position(self):
         for clip in self.clip_listener:
-            if len(self.triggers) > 0:
+            if len(triggers) > 0:
                 for trigger in list(self.active_triggers):
                     if clip.loop_end <= (clip.playing_position + self.active_triggers[trigger]):
                         del self.active_triggers[trigger]
@@ -58,13 +61,16 @@ class ClipMonitor:
                         eval(str(trigger))
 
     def fire_scene(self):
-        log("PlayMode: " + str(playMode))
+        if debug:
+            log("PlayMode: " + str(playMode))
         if playMode == 'next':
             next_index = int(self.playing_scene_index) + 1
             LiveUtils.getScene(next_index).fire()
         elif playMode == 'repeat':
             LiveUtils.getScene(self.playing_scene_index).fire()
 
-
+    def cue_count(self):
+        if debug:
+            log("Cue Count Triggered ")
 
 
