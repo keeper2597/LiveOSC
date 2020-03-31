@@ -55,6 +55,8 @@ class LiveOSCCallbacks:
 
         self.callbackManager.add("/tempo", self.tempoCB)
         self.callbackManager.add("/time", self.timeCB)
+        self.callbackManager.add("/quantization", self.quantizationCB)
+        self.callbackManager.add("/selection", self.selectionCB)
 
         ###################################################################################################################
         #######################################      PLAY / STOP             ##############################################
@@ -69,7 +71,7 @@ class LiveOSCCallbacks:
         #######################################      SCENES                  ##############################################
         ###################################################################################################################
 
-        self.callbackManager.add("/play/scene", self.playSceneCB)
+        self.callbackManager.add("/scene/play", self.playSceneCB)
         self.callbackManager.add("/scenes", self.scenesCB)
         self.callbackManager.add("/scenecount", self.scenecountCB)
         self.callbackManager.add("/scene/name", self.nameSceneCB)
@@ -80,15 +82,15 @@ class LiveOSCCallbacks:
         #######################################      TRACKS                  ##############################################
         ###################################################################################################################
 
-        self.callbackManager.add("/stop/track", self.stopTrackCB)
+        self.callbackManager.add("/track/stop", self.stopTrackCB)
         self.callbackManager.add("/track/name", self.nameTrackCB)
-        self.callbackManager.add("/name/trackblock", self.nameTrackBlockCB)
-        self.callbackManager.add("/arm", self.armTrackCB)
-        self.callbackManager.add("/mute", self.muteTrackCB)
-        self.callbackManager.add("/solo", self.soloTrackCB)
-        self.callbackManager.add("/volume", self.volumeCB)
-        self.callbackManager.add("/pan", self.panCB)
-        self.callbackManager.add("/send", self.sendCB)
+        self.callbackManager.add("/trackblock/name", self.nameTrackBlockCB)
+        self.callbackManager.add("/track/arm", self.armTrackCB)
+        self.callbackManager.add("/track/mute", self.muteTrackCB)
+        self.callbackManager.add("/track/solo", self.soloTrackCB)
+        self.callbackManager.add("/track/volume", self.volumeCB)
+        self.callbackManager.add("/track/pan", self.panCB)
+        self.callbackManager.add("/track/send", self.sendCB)
         self.callbackManager.add("/track/jump", self.trackJump)
         self.callbackManager.add("/track/info", self.trackInfoCB)
 
@@ -131,19 +133,19 @@ class LiveOSCCallbacks:
         self.callbackManager.add("/redo", self.redoCB)
         
         
-        self.callbackManager.add("/scene/view", self.viewSceneCB)
-        self.callbackManager.add("/track/view", self.viewTrackCB)
-        self.callbackManager.add("/return/view", self.viewTrackCB)
-        self.callbackManager.add("/master/view", self.mviewTrackCB)
-        self.callbackManager.add("/track/device/view", self.viewDeviceCB)
-        self.callbackManager.add("/return/device/view", self.viewDeviceCB)
-        self.callbackManager.add("/master/device/view", self.mviewDeviceCB)        
-        self.callbackManager.add("/clip/view", self.viewClipCB)
-        self.callbackManager.add("/detail/view", self.detailViewCB)
+        # self.callbackManager.add("/scene/view", self.viewSceneCB)
+        # self.callbackManager.add("/track/view", self.viewTrackCB)
+        # self.callbackManager.add("/return/view", self.viewTrackCB)
+        # self.callbackManager.add("/master/view", self.mviewTrackCB)
+        # self.callbackManager.add("/track/device/view", self.viewDeviceCB)
+        # self.callbackManager.add("/return/device/view", self.viewDeviceCB)
+        # self.callbackManager.add("/master/device/view", self.mviewDeviceCB)        
+        # self.callbackManager.add("/clip/view", self.viewClipCB)
+        # self.callbackManager.add("/detail/view", self.detailViewCB)
         
 
-        self.callbackManager.add("/overdub", self.overdubCB)
-        self.callbackManager.add("/state", self.stateCB)
+        # self.callbackManager.add("/overdub", self.overdubCB)
+        # self.callbackManager.add("/state", self.stateCB)
         
         
         self.callbackManager.add("/return/mute", self.muteTrackCB)
@@ -155,33 +157,31 @@ class LiveOSCCallbacks:
         self.callbackManager.add("/master/volume", self.volumeCB)
         self.callbackManager.add("/master/pan", self.panCB)
         
-        self.callbackManager.add("/devicelist", self.devicelistCB)
-        self.callbackManager.add("/return/devicelist", self.devicelistCB)
-        self.callbackManager.add("/master/devicelist", self.mdevicelistCB)
+        # self.callbackManager.add("/devicelist", self.devicelistCB)
+        # self.callbackManager.add("/return/devicelist", self.devicelistCB)
+        # self.callbackManager.add("/master/devicelist", self.mdevicelistCB)
 
-        self.callbackManager.add("/device/range", self.devicerangeCB)
-        self.callbackManager.add("/return/device/range", self.devicerangeCB)
-        self.callbackManager.add("/master/device/range", self.mdevicerangeCB)
+        # self.callbackManager.add("/device/range", self.devicerangeCB)
+        # self.callbackManager.add("/return/device/range", self.devicerangeCB)
+        # self.callbackManager.add("/master/device/range", self.mdevicerangeCB)
         
-        self.callbackManager.add("/device", self.deviceCB)
-        self.callbackManager.add("/return/device", self.deviceCB)
-        self.callbackManager.add("/master/device", self.mdeviceCB)
+        # self.callbackManager.add("/device", self.deviceCB)
+        # self.callbackManager.add("/return/device", self.deviceCB)
+        # self.callbackManager.add("/master/device", self.mdeviceCB)
         
         
 
-        self.callbackManager.add("/master/crossfader", self.crossfaderCB)
-        self.callbackManager.add("/track/crossfader", self.trackxfaderCB)
-        self.callbackManager.add("/return/crossfader", self.trackxfaderCB)
+        # self.callbackManager.add("/master/crossfader", self.crossfaderCB)
+        # self.callbackManager.add("/track/crossfader", self.trackxfaderCB)
+        # self.callbackManager.add("/return/crossfader", self.trackxfaderCB)
 
-        self.callbackManager.add("/quantization", self.quantizationCB)
+        
 
-        self.callbackManager.add("/selection", self.selectionCB)
-
-        self.callbackManager.add("/deactivate", self.deactivateCB)
-        self.callbackManager.add("/clear_inactive", self.clearInactiveCB)
-        self.callbackManager.add("/filter_clips", self.filterClipsCB)
-        self.callbackManager.add("/distribute_groups", self.distributeGroupsCB)
-        self.callbackManager.add("/play/group_scene", self.playGroupSceneCB)
+        # self.callbackManager.add("/deactivate", self.deactivateCB)
+        # self.callbackManager.add("/clear_inactive", self.clearInactiveCB)
+        # self.callbackManager.add("/filter_clips", self.filterClipsCB)
+        # self.callbackManager.add("/distribute_groups", self.distributeGroupsCB)
+        # self.callbackManager.add("/play/group_scene", self.playGroupSceneCB)
 
         self.callbackManager.add("/playMode", self.setPlayModeCB)
 
@@ -260,10 +260,10 @@ class LiveOSCCallbacks:
             LiveUtils.launchClip(track, clip)
             
     def playSceneCB(self, msg, source):
-        """Called when a /play/scene message is received.
+        """Called when a /scene/play message is received.
 
         Messages:
-        /play/scene    (int scene)     Launches scene number scene
+        /scene/play    (int scene)     Launches scene number scene
         """
         if len(msg) == 3:
             scene = msg[2]
@@ -289,10 +289,10 @@ class LiveOSCCallbacks:
             LiveUtils.stopClip(track, clip)
 
     def stopTrackCB(self, msg, source):
-        """Called when a /stop/track message is received.
+        """Called when a /track/stop message is received.
 
         Messages:
-        /stop/track     (int track, int clip)   Stops track number track
+        /track/stop     (int track, int clip)   Stops track number track
         """
         if len(msg) == 3:
             track = msg[2]
@@ -523,9 +523,9 @@ class LiveOSCCallbacks:
             LiveUtils.getTrack(trackNumber).name = name
 
     def nameTrackBlockCB(self, msg, source):
-        """Called when a /name/trackblock message is received.
+        """Called when a /trackblock/name message is received.
 
-        /name/trackblock    (int offset, int blocksize) Returns a list of blocksize track names starting at offset
+        /trackblock/name    (int offset, int blocksize) Returns a list of blocksize track names starting at offset
         """
         if len(msg) == 4:
             block = []
@@ -571,6 +571,7 @@ class LiveOSCCallbacks:
         /clip/name    (int track, int clip, string name)Sets clip number clip in track number track's name to name
 
         """
+        
         #Requesting all clip names
         if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
             trackNumber = 0
@@ -675,7 +676,7 @@ class LiveOSCCallbacks:
         clipslot.delete_clip()
     
     def armTrackCB(self, msg, source):
-        """Called when a /arm message is received.
+        """Called when a track/arm message is received.
 
         Messages:
         /arm     (int track)   (int armed/disarmed)     Arms track number track
@@ -690,10 +691,10 @@ class LiveOSCCallbacks:
         # Return arm status        
         elif len(msg) == 3:
             status = LiveUtils.getTrack(track).arm
-            self.oscEndpoint.send("/arm", (track, int(status)))     
+            self.oscEndpoint.send("track/arm", (track, int(status)))     
             
     def muteTrackCB(self, msg, source):
-        """Called when a /mute message is received.
+        """Called when a track/mute or return/mute message is received.
 
         Messages:
         /mute     (int track)   Mutes track number track
@@ -714,7 +715,7 @@ class LiveOSCCallbacks:
                 
             else:
                 status = LiveUtils.getTrack(track).mute
-                self.oscEndpoint.send("/mute", (track, int(status)))
+                self.oscEndpoint.send("track/mute", (track, int(status)))
 
     def deactivateCB(self, msg, source):
         for track in LiveUtils.getTracks():

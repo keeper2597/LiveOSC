@@ -264,10 +264,11 @@ class CallbackManager:
 	of decoded OSC arguments, including the address and
 	the typetags as the first two arguments."""
 
+	prefix = '/elc'
+
 	def __init__(self):
 		self.callbacks = {}
 		self.add("#bundle", self.unbundler)
-		self.prefix = '/elc'
 
 	def handle(self, data, source):
 		"""Given OSC data, tries to call the callback with the right address."""
@@ -275,10 +276,11 @@ class CallbackManager:
 		self.dispatch(decoded, source)
 
 	def dispatch(self, message, source):
-		"""Sends decoded OSC data to an appropriate calback"""
+		"""Sends decoded OSC data to an appropriate callback"""
 		address = message[0]
 		try:
 			self.callbacks[address](message, source)
+			log("Callback for %s initiated." % address)
 		except Exception, e:
 			log("Callback failed: %s" % e)
 			import traceback
