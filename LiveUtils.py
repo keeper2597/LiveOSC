@@ -70,7 +70,7 @@ def getScenes():
 
 def getScene(num):
     """Returns scene number (num) (starting at 0)"""
-    return getSong().scenes[num]
+    return getSong().scenes[int(num)]
 
 def launchScene(scene):
     """Launches scene number (scene)"""
@@ -82,7 +82,7 @@ def getTracks():
 
 def getTrack(num):
     """Returns track number (num) (starting at 0)"""
-    return getSong().tracks[num]
+    return getSong().tracks[int(num)]
 
 def stopTrack(trackNumber):
     """Stops all clips in track number (trackNumber)"""
@@ -104,63 +104,63 @@ def jumpToPrevCue():
     
 def armTrack(num):
     """Arms track number (num)"""
-    getTrack(num).arm = 1
+    getTrack(int(num)).arm = 1
 
 def disarmTrack(num):
     """Disarms track number (num)"""
-    getTrack(num).arm = 0
+    getTrack(int(num)).arm = 0
 
 def toggleArmTrack(num):
     """Toggles the armed state of track number (num)"""
-    armed = getTrack(num).arm
+    armed = getTrack(int(num)).arm
     if armed:
-        getTrack(num).arm = 0
+        getTrack(int(num)).arm = 0
     else:
-        getTrack(num).arm = 1
+        getTrack(int(num)).arm = 1
 
 def muteTrack(track, ty = 0):
     """Mutes track number (num)"""
     if ty == 1:
-        getSong().return_tracks[track].mute = 1
+        getSong().return_tracks[int(track)].mute = 1
     else:
-        getTrack(track).mute = 1
+        getTrack(int(track)).mute = 1
 
 def unmuteTrack(track, ty = 0):
     """Unmutes track number (num)"""
     if ty == 1:
-        getSong().return_tracks[track].mute = 0
+        getSong().return_tracks[int(track)].mute = 0
     else:    
-        getTrack(track).mute = 0
+        getTrack(int(track)).mute = 0
     
 def toggleMuteTrack(num):
     """Toggles the muted state of track number (num)"""
-    muted = getTrack(num).mute
+    muted = getTrack(int(num)).mute
     if muted:
-        getTrack(num).mute = 0
+        getTrack(int(num)).mute = 0
     else:
-        getTrack(num).mute = 1
+        getTrack(int(num)).mute = 1
 
 def soloTrack(track, ty = 0):
     """Solo's track number (num)"""
     if ty == 1:
-        getSong().return_tracks[track].solo = 1
+        getSong().return_tracks[int(track)].solo = 1
     else:
-        getTrack(track).solo = 1    
+        getTrack(int(track)).solo = 1    
     
 def unsoloTrack(track, ty = 0):
     """Un-solos track number (num)"""
     if ty == 1:
-        getSong().return_tracks[track].solo = 0
+        getSong().return_tracks[int(track)].solo = 0
     else:
-        getTrack(track).solo = 0
+        getTrack(int(track)).solo = 0
     
 def toggleSoloTrack(num):
     """Toggles the soloed state of track number (num)"""
-    soloed = getTrack(num).solo
+    soloed = getTrack(int(num)).solo
     if soloed:
-        getTrack(num).solo = 0
+        getTrack(int(num)).solo = 0
     else:
-        getTrack(num).solo = 1
+        getTrack(int(num)).solo = 1
 
 def trackVolume(track, volume = None):
     """Gets/Changes the volume of track (track)
@@ -169,8 +169,8 @@ def trackVolume(track, volume = None):
     (track) to (volume), a value between 0.0 and 1.0.
     """
     if volume != None:
-        getTrack(track).mixer_device.volume.value = volume
-    return getTrack(track).mixer_device.volume.value
+        getTrack(int(track)).mixer_device.volume.value = volume
+    return getTrack(int(track)).mixer_device.volume.value
 
 def trackPan(track, pan = None):
     """Gets/Changes the panning of track number (track)
@@ -179,8 +179,8 @@ def trackPan(track, pan = None):
     (pan) should be a value between -1.0 to 1.0
     """
     if pan != None:
-        getTrack(track).mixer_device.panning.value = pan
-    return getTrack(track).mixer_device.panning.value
+        getTrack(int(track)).mixer_device.panning.value = pan
+    return getTrack(int(track)).mixer_device.panning.value
 
 def trackSend(track, send = None, level=None):
     """Gets/Changes the level of send number (send) on track (track).
@@ -189,10 +189,10 @@ def trackSend(track, send = None, level=None):
     a value between 0.0 and 1.0
     """
     if send == None:
-        return getTrack(track).mixer_device.sends
+        return getTrack(int(track)).mixer_device.sends
     if level != None:
-        getTrack(track).mixer_device.sends[send].value = level
-    return getTrack(track).mixer_device.sends[send].value
+        getTrack(int(track)).mixer_device.sends[send].value = level
+    return getTrack(int(track)).mixer_device.sends[send].value
     
 def trackName(track, name = None):
     """Gets/Changes the name of track (track).
@@ -200,8 +200,8 @@ def trackName(track, name = None):
     If (name) is specified, the track name is changed
     """
     if name != None:
-        getTrack(track).name = name
-    return str(getTrack(track).name)
+        getTrack(int(track)).name = name
+    return str(getTrack(int(track)).name)
 
 def getClipSlots():
     """Gets a 2D list of all the clip slots in the song"""
@@ -228,16 +228,16 @@ def getClips():
 
 def launchClip(track, clip):
     """Launches clip number (clip) in track number (track)"""
-    getClip(track, clip).fire()
+    getClip(int(track), int(clip)).fire()
 
 def stopClip(track, clip):
     """Stops clip number (clip) in track (track)""" 
-    getClip(track, clip).stop()
+    getClip(int(track), int(clip)).stop()
 
 def getClip(track, clip):
     """Returns clip number (clip) in track (track)"""
     clips = getClips()
-    return clips[track][clip]
+    return clips[int(track)][int(clip)]
 
 def clipName(track, clip, name = None):
     """Gets/changes the name of clip number (clip) in track (track)
@@ -246,15 +246,15 @@ def clipName(track, clip, name = None):
 
     """
     if name != None:
-        getClip(track, clip).name = name
-    return str(getClip(track, clip).name)
+        getClip(int(track), int(clip)).name = name
+    return str(getClip(int(track), int(clip)).name)
 
 def clipPitch(track, clip, coarse = None, fine = None):
     """Gets/changes the coarse and fine pitch shift of clip (clip) in track (track).
 
     If (coarse) or (fine) are specified, changes the clip's pitch.
     """
-    clip = getClip(track, clip)
+    clip = getClip(int(track), int(clip))
     if coarse != None:
         clip.pitch_coarse = coarse
     if fine != None:

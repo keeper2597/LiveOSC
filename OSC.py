@@ -267,6 +267,7 @@ class CallbackManager:
 	def __init__(self):
 		self.callbacks = {}
 		self.add("#bundle", self.unbundler)
+		self.prefix = '/elc'
 
 	def handle(self, data, source):
 		"""Given OSC data, tries to call the callback with the right address."""
@@ -288,6 +289,13 @@ class CallbackManager:
 		"""Adds a callback to our set of callbacks,
 		or removes the callback with name if callback
 		is None."""
+
+		#check to make sure the address starts with '/'
+		if address[0] != '/':
+			address = '/' + address
+
+		# add in our prefix
+		address = self.prefix + address
 		if callback == None:
 			del self.callbacks[address]
 		else:

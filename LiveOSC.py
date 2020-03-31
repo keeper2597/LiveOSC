@@ -69,13 +69,13 @@ class LiveOSC:
         
         log("LiveOSC initialized")
 
-        self.clipMonitor = ClipMonitor.ClipMonitor(0)
+        #self.clipMonitor = ClipMonitor.ClipMonitor(0)
 
-        #log(dir(Live.Song))
+        # log(dir(Live.Song))
 
-        #log(dir(Live.Song.BeatTime))
+        # log(dir(Live.Song.BeatTime))
 
-        #log(dir(Live.Application.get_application().view))
+        # log(dir(Live.Application.get_application().view))
 
         # for x in Live.Application.get_application().view.available_main_views():
         #     log(x)
@@ -238,7 +238,7 @@ class LiveOSC:
         self.refresh_state()            
             
     def refresh_state(self):
-        #self.add_clip_listeners()
+        self.add_clip_listeners()
         #self.add_mixer_listeners()
         self.add_scene_listeners()
         self.add_tempo_listener()
@@ -700,7 +700,7 @@ class LiveOSC:
         self.oscEndpoint.send('/elc/name/clip', (tid, cid, str(clip.name), clip.color))
     
     def clip_position(self, clip, tid, cid):
-        if self.check_md(1):
+        #if self.check_md(1):
             if clip.is_playing:
                 self.oscEndpoint.send('/elc/clip/position', (tid, cid, clip.playing_position, clip.length, clip.loop_start, clip.loop_end))
     

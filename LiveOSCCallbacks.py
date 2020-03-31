@@ -35,6 +35,13 @@ from Logger import log
 
 debug = LiveUtils.debug
 
+
+"""
+    This class sets the address to call for much of the LiveAPI interactions.
+    The callbackManager.add() puts them in a dictionary in the CallbackManager class in the OSC.py document
+    The CallbackManager class adds a prefix for each address so one should not be added here
+"""
+
 class LiveOSCCallbacks:
     def __init__(self, c_instance, oscEndpoint):
         self.oscEndpoint = oscEndpoint
@@ -42,290 +49,239 @@ class LiveOSCCallbacks:
 
         self.c_instance = c_instance
 
-        self.callbackManager.add("/elc/tempo", self.tempoCB)
-        self.callbackManager.add("/elc/time", self.timeCB)
-        self.callbackManager.add("/elc/next/cue", self.nextCueCB)
-        self.callbackManager.add("/elc/prev/cue", self.prevCueCB)
-        self.callbackManager.add("/elc/play", self.playCB)
-        self.callbackManager.add("/elc/play/continue", self.playContinueCB)
-        self.callbackManager.add("/elc/play/selection", self.playSelectionCB)
-        self.callbackManager.add("/elc/play/clip", self.playClipCB)
-        self.callbackManager.add("/elc/play/scene", self.playSceneCB)  
-        self.callbackManager.add("/elc/stop", self.stopCB)
-        self.callbackManager.add("/elc/stop/clip", self.stopClipCB)
-        self.callbackManager.add("/elc/stop/track", self.stopTrackCB)
-        self.callbackManager.add("/elc/scenes", self.scenesCB)
-        self.callbackManager.add("/elc/tracks", self.tracksCB)
+        ###################################################################################################################
+        #######################################      TIMING                  ##############################################
+        ###################################################################################################################
 
-        self.callbackManager.add("/elc/name/scene", self.nameSceneCB)
-        self.callbackManager.add("/elc/scene", self.sceneCB)
-        self.callbackManager.add("/elc/name/sceneblock", self.nameSceneBlockCB)
-        self.callbackManager.add("/elc/name/track", self.nameTrackCB)
-        self.callbackManager.add("/elc/name/trackblock", self.nameTrackBlockCB)
-        self.callbackManager.add("/elc/name/clip", self.nameClipCB)
-        self.callbackManager.add("/elc/name/clipblock", self.nameClipBlockCB)    
-        self.callbackManager.add("/elc/arm", self.armTrackCB)
-        self.callbackManager.add("/elc/mute", self.muteTrackCB)
-        self.callbackManager.add("/elc/solo", self.soloTrackCB)
-        self.callbackManager.add("/elc/volume", self.volumeCB)
-        self.callbackManager.add("/elc/pan", self.panCB)
-        self.callbackManager.add("/elc/send", self.sendCB)
-        self.callbackManager.add("/elc/pitch", self.pitchCB)
-        self.callbackManager.add("/elc/track/jump", self.trackJump)
-        self.callbackManager.add("/elc/track/info", self.trackInfoCB)
-        self.callbackManager.add("/elc/undo", self.undoCB)
-        self.callbackManager.add("/elc/redo", self.redoCB)
-        self.callbackManager.add("/elc/play/clipslot", self.playClipSlotCB)
-        
-        self.callbackManager.add("/elc/scene/view", self.viewSceneCB)
-        
-        self.callbackManager.add("/elc/track/view", self.viewTrackCB)
-        self.callbackManager.add("/elc/return/view", self.viewTrackCB)
-        self.callbackManager.add("/elc/master/view", self.mviewTrackCB)
-        
-        self.callbackManager.add("/elc/track/device/view", self.viewDeviceCB)
-        self.callbackManager.add("/elc/return/device/view", self.viewDeviceCB)
-        self.callbackManager.add("/elc/master/device/view", self.mviewDeviceCB)        
-        
-        self.callbackManager.add("/elc/clip/view", self.viewClipCB)
-        
-        self.callbackManager.add("/elc/detail/view", self.detailViewCB)
-        
-        self.callbackManager.add("/elc/overdub", self.overdubCB)
-        self.callbackManager.add("/elc/state", self.stateCB)
-        self.callbackManager.add("/elc/clip/info", self.clipInfoCB)
-        
-        self.callbackManager.add("/elc/return/mute", self.muteTrackCB)
-        self.callbackManager.add("/elc/return/solo", self.soloTrackCB)
-        self.callbackManager.add("/elc/return/volume", self.volumeCB)
-        self.callbackManager.add("/elc/return/pan", self.panCB)
-        self.callbackManager.add("/elc/return/send", self.sendCB)        
+        self.callbackManager.add("/tempo", self.tempoCB)
+        self.callbackManager.add("/time", self.timeCB)
 
-        self.callbackManager.add("/elc/master/volume", self.volumeCB)
-        self.callbackManager.add("/elc/master/pan", self.panCB)
+        ###################################################################################################################
+        #######################################      PLAY / STOP             ##############################################
+        ###################################################################################################################
         
-        self.callbackManager.add("/elc/devicelist", self.devicelistCB)
-        self.callbackManager.add("/elc/return/devicelist", self.devicelistCB)
-        self.callbackManager.add("/elc/master/devicelist", self.mdevicelistCB)
+        self.callbackManager.add("/play", self.playCB)
+        self.callbackManager.add("/play/continue", self.playContinueCB)
+        self.callbackManager.add("/play/selection", self.playSelectionCB)  
+        self.callbackManager.add("/stop", self.stopCB)
 
-        self.callbackManager.add("/elc/device/range", self.devicerangeCB)
-        self.callbackManager.add("/elc/return/device/range", self.devicerangeCB)
-        self.callbackManager.add("/elc/master/device/range", self.mdevicerangeCB)
+        ###################################################################################################################
+        #######################################      SCENES                  ##############################################
+        ###################################################################################################################
+
+        self.callbackManager.add("/play/scene", self.playSceneCB)
+        self.callbackManager.add("/scenes", self.scenesCB)
+        self.callbackManager.add("/scenecount", self.scenecountCB)
+        self.callbackManager.add("/scene/name", self.nameSceneCB)
+        self.callbackManager.add("/scene", self.sceneCB)
+        self.callbackManager.add("/sceneblock/name", self.nameSceneBlockCB)
+
+        ###################################################################################################################
+        #######################################      TRACKS                  ##############################################
+        ###################################################################################################################
+
+        self.callbackManager.add("/stop/track", self.stopTrackCB)
+        self.callbackManager.add("/track/name", self.nameTrackCB)
+        self.callbackManager.add("/name/trackblock", self.nameTrackBlockCB)
+        self.callbackManager.add("/arm", self.armTrackCB)
+        self.callbackManager.add("/mute", self.muteTrackCB)
+        self.callbackManager.add("/solo", self.soloTrackCB)
+        self.callbackManager.add("/volume", self.volumeCB)
+        self.callbackManager.add("/pan", self.panCB)
+        self.callbackManager.add("/send", self.sendCB)
+        self.callbackManager.add("/track/jump", self.trackJump)
+        self.callbackManager.add("/track/info", self.trackInfoCB)
+
+
+        ###################################################################################################################
+        #######################################      CLIPS                   ##############################################
+        ###################################################################################################################
+
+        self.callbackManager.add("/clip/play", self.playClipCB)
+        self.callbackManager.add("/clip/stop", self.stopClipCB)
+        self.callbackManager.add("/clip/name", self.nameClipCB)
+        self.callbackManager.add("/clip/info", self.clipInfoCB)
+        self.callbackManager.add("/clipblock/name", self.nameClipBlockCB)    
+        self.callbackManager.add("/clip/pitch", self.pitchCB)
+        self.callbackManager.add("/clip/loopstate", self.loopStateCB)
+        self.callbackManager.add("/clip/loopstart", self.loopStartCB)
+        self.callbackManager.add("/clip/loopend", self.loopEndCB)
+        self.callbackManager.add("/clip/loopstate_id", self.loopStateCB)
+        self.callbackManager.add("/clip/loopstart_id", self.loopStartCB)
+        self.callbackManager.add("/clip/loopend_id", self.loopEndCB)
         
-        self.callbackManager.add("/elc/device", self.deviceCB)
-        self.callbackManager.add("/elc/return/device", self.deviceCB)
-        self.callbackManager.add("/elc/master/device", self.mdeviceCB)
+        self.callbackManager.add("/clip/warping", self.warpingCB)
+        self.callbackManager.add("/clip/signature", self.sigCB)
+
+        self.callbackManager.add("/clip/add_note", self.addNoteCB)
+        self.callbackManager.add("/clip/notes", self.getNotesCB)
+        self.callbackManager.add("/clip/create", self.createClipCB)
+        self.callbackManager.add("/clip/delete", self.deleteClipCB)
+
+        self.callbackManager.add("/clip/mute", self.muteClipCB)
+        self.callbackManager.add("/clipslot/play", self.playClipSlotCB)
+
+
+
+
+
+
+
+        self.callbackManager.add("/undo", self.undoCB)
+        self.callbackManager.add("/redo", self.redoCB)
         
-        self.callbackManager.add("/elc/clip/loopstate", self.loopStateCB)
-        self.callbackManager.add("/elc/clip/loopstart", self.loopStartCB)
-        self.callbackManager.add("/elc/clip/loopend", self.loopEndCB)
         
-        self.callbackManager.add("/elc/clip/loopstate_id", self.loopStateCB)
-        self.callbackManager.add("/elc/clip/loopstart_id", self.loopStartCB)
-        self.callbackManager.add("/elc/clip/loopend_id", self.loopEndCB)
+        self.callbackManager.add("/scene/view", self.viewSceneCB)
+        self.callbackManager.add("/track/view", self.viewTrackCB)
+        self.callbackManager.add("/return/view", self.viewTrackCB)
+        self.callbackManager.add("/master/view", self.mviewTrackCB)
+        self.callbackManager.add("/track/device/view", self.viewDeviceCB)
+        self.callbackManager.add("/return/device/view", self.viewDeviceCB)
+        self.callbackManager.add("/master/device/view", self.mviewDeviceCB)        
+        self.callbackManager.add("/clip/view", self.viewClipCB)
+        self.callbackManager.add("/detail/view", self.detailViewCB)
         
-        self.callbackManager.add("/elc/clip/warping", self.warpingCB)
+
+        self.callbackManager.add("/overdub", self.overdubCB)
+        self.callbackManager.add("/state", self.stateCB)
         
-        self.callbackManager.add("/elc/clip/signature", self.sigCB)
+        
+        self.callbackManager.add("/return/mute", self.muteTrackCB)
+        self.callbackManager.add("/return/solo", self.soloTrackCB)
+        self.callbackManager.add("/return/volume", self.volumeCB)
+        self.callbackManager.add("/return/pan", self.panCB)
+        self.callbackManager.add("/return/send", self.sendCB)        
 
-        self.callbackManager.add("/elc/clip/add_note", self.addNoteCB)
-        self.callbackManager.add("/elc/clip/notes", self.getNotesCB)
-        self.callbackManager.add("/elc/clip/create", self.createClipCB)
-        self.callbackManager.add("/elc/clip/delete", self.deleteClipCB)
+        self.callbackManager.add("/master/volume", self.volumeCB)
+        self.callbackManager.add("/master/pan", self.panCB)
+        
+        self.callbackManager.add("/devicelist", self.devicelistCB)
+        self.callbackManager.add("/return/devicelist", self.devicelistCB)
+        self.callbackManager.add("/master/devicelist", self.mdevicelistCB)
 
-        self.callbackManager.add("/elc/clip/mute", self.muteClipCB)
+        self.callbackManager.add("/device/range", self.devicerangeCB)
+        self.callbackManager.add("/return/device/range", self.devicerangeCB)
+        self.callbackManager.add("/master/device/range", self.mdevicerangeCB)
+        
+        self.callbackManager.add("/device", self.deviceCB)
+        self.callbackManager.add("/return/device", self.deviceCB)
+        self.callbackManager.add("/master/device", self.mdeviceCB)
+        
+        
 
-        self.callbackManager.add("/elc/master/crossfader", self.crossfaderCB)
-        self.callbackManager.add("/elc/track/crossfader", self.trackxfaderCB)
-        self.callbackManager.add("/elc/return/crossfader", self.trackxfaderCB)
+        self.callbackManager.add("/master/crossfader", self.crossfaderCB)
+        self.callbackManager.add("/track/crossfader", self.trackxfaderCB)
+        self.callbackManager.add("/return/crossfader", self.trackxfaderCB)
 
-        self.callbackManager.add("/elc/quantization", self.quantizationCB)
+        self.callbackManager.add("/quantization", self.quantizationCB)
 
-        self.callbackManager.add("/elc/selection", self.selectionCB)
+        self.callbackManager.add("/selection", self.selectionCB)
 
-        self.callbackManager.add("/elc/deactivate", self.deactivateCB)
-        self.callbackManager.add("/elc/clear_inactive", self.clearInactiveCB)
-        self.callbackManager.add("/elc/filter_clips", self.filterClipsCB)
-        self.callbackManager.add("/elc/distribute_groups", self.distributeGroupsCB)
-        self.callbackManager.add("/elc/play/group_scene", self.playGroupSceneCB)
+        self.callbackManager.add("/deactivate", self.deactivateCB)
+        self.callbackManager.add("/clear_inactive", self.clearInactiveCB)
+        self.callbackManager.add("/filter_clips", self.filterClipsCB)
+        self.callbackManager.add("/distribute_groups", self.distributeGroupsCB)
+        self.callbackManager.add("/play/group_scene", self.playGroupSceneCB)
 
-        self.callbackManager.add("/elc/playMode", self.setPlayModeCB)
+        self.callbackManager.add("/playMode", self.setPlayModeCB)
 
         self.clip_notes_cache = {}
 
-    def setPlayModeCB(self, msg, source):
-        ClipMonitor.playMode = str(msg[2])
-        self.oscEndpoint.send("/elc/playMode", msg[2])
-        if debug:
-            log("setPlayModeCB called by OSC with message: " + str(msg[2]))
-
-
-    def sigCB(self, msg, source):
-        """ Called when a /elc/clip/signature message is recieved
-        """
-        track = msg[2]
-        clip = msg[3]
-        c = LiveUtils.getSong().tracks[track].clip_slots[clip].clip
-        
-        if len(msg) == 4:
-            self.oscEndpoint.send("/elc/clip/signature", (track, clip, c.signature_numerator, c.signature_denominator))
-            
-        if len(msg) == 6:
-            self.oscEndpoint.send("/elc/clip/signature", 1)
-            c.signature_denominator = msg[5]
-            c.signature_numerator = msg[4]
-
-    def warpingCB(self, msg, source):
-        """ Called when a /elc/clip/warping message is recieved
-        """
-        track = msg[2]
-        clip = msg[3]
-        
-        
-        if len(msg) == 4:
-            state = LiveUtils.getSong().tracks[track].clip_slots[clip].clip.warping
-            self.oscEndpoint.send("/elc/clip/warping", (track, clip, int(state)))
-        
-        elif len(msg) == 5:
-            LiveUtils.getSong().tracks[track].clip_slots[clip].clip.warping = msg[4]
-
-    def selectionCB(self, msg, source):
-        """ Called when a /elc/selection message is received
-        """
-        if len(msg) == 6:
-            self.c_instance.set_session_highlight(msg[2], msg[3], msg[4], msg[5], 0)
-
-    def trackxfaderCB(self, msg, source):
-        """ Called when a /elc/track/crossfader or /elc/return/crossfader message is received
-        """
-        ty = msg[0] == '/elc/return/crossfader' and 1 or 0
-    
-        if len(msg) == 3:
-            track = msg[2]
-        
-            if ty == 1:
-                assign = LiveUtils.getSong().return_tracks[track].mixer_device.crossfade_assign
-                name   = LiveUtils.getSong().return_tracks[track].mixer_device.crossfade_assignments.values[assign]
-            
-                self.oscEndpoint.send("/elc/return/crossfader", (track, str(assign), str(name)))
-            else:
-                assign = LiveUtils.getSong().tracks[track].mixer_device.crossfade_assign
-                name   = LiveUtils.getSong().tracks[track].mixer_device.crossfade_assignments.values[assign]
-            
-                self.oscEndpoint.send("/elc/track/crossfader", (track, str(assign), str(name)))
-
-            
-        elif len(msg) == 4:
-            track = msg[2]
-            assign = msg[3]
-            
-            if ty == 1:
-                LiveUtils.getSong().return_tracks[track].mixer_device.crossfade_assign = assign
-            else:
-                LiveUtils.getSong().tracks[track].mixer_device.crossfade_assign = assign
-
     def tempoCB(self, msg, source):
-        """Called when a /elc/tempo message is received.
+        """Called when a /tempo message is received.
 
         Messages:
-        /elc/tempo                 Request current tempo, replies with /elc/tempo (float tempo)
-        /elc/tempo (float tempo)   Set the tempo, replies with /elc/tempo (float tempo)
+        /tempo                 Request current tempo, replies with /tempo (float tempo)
+        /tempo (float tempo)   Set the tempo, replies with /tempo (float tempo)
         """
         if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
-            self.oscEndpoint.send("/elc/tempo", LiveUtils.getTempo())
+            self.oscEndpoint.send("/tempo", LiveUtils.getTempo())
         
         elif len(msg) == 3:
             tempo = msg[2]
             LiveUtils.setTempo(tempo)
-        
+    
     def timeCB(self, msg, source):
-        """Called when a /elc/time message is received.
+        """Called when a /time message is received.
 
         Messages:
-        /elc/time                 Request current song time, replies with /elc/time (float time)
-        /elc/time (float time)    Set the time , replies with /elc/time (float time)
+        /time                 Request current song time, replies with /time (float time)
+        /time (float time)    Set the time , replies with /time (float time)
         """
         if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
-            self.oscEndpoint.send("/elc/time", float(LiveUtils.currentTime()))
+            self.oscEndpoint.send("/time", float(LiveUtils.currentTime()))
 
         elif len(msg) == 3:
             time = msg[2]
             LiveUtils.currentTime(time)
 
-    def nextCueCB(self, msg, source):
-        """Called when a /elc/next/cue message is received.
 
-        Messages:
-        /elc/next/cue              Jumps to the next cue point
-        """
-        LiveUtils.jumpToNextCue()
-        
-    def prevCueCB(self, msg, source):
-        """Called when a /elc/prev/cue message is received.
+    # self.callbackManager.add("/next/cue", self.nextCueCB)
+    # self.callbackManager.add("/prev/cue", self.prevCueCB)
 
-        Messages:
-        /elc/prev/cue              Jumps to the previous cue point
-        """
-        LiveUtils.jumpToPrevCue()
-        
+    ###################################################################################################################
+    #######################################      PLAY / STOP             ##############################################
+    ###################################################################################################################
+
+
     def playCB(self, msg, source):
-        """Called when a /elc/play message is received.
+        """Called when a /play message is received.
 
         Messages:
-        /elc/play              Starts the song playing
+        /play              Starts the song playing
         """
         LiveUtils.play()
-        
+    
     def playContinueCB(self, msg, source):
-        """Called when a /elc/play/continue message is received.
+        """Called when a /play/continue message is received.
 
         Messages:
-        /elc/play/continue     Continues playing the song from the current point
+        /play/continue     Continues playing the song from the current point
         """
         LiveUtils.continuePlaying()
         
     def playSelectionCB(self, msg, source):
-        """Called when a /elc/play/selection message is received.
+        """Called when a /play/selection message is received.
 
         Messages:
-        /elc/play/selection    Plays the current selection
+        /play/selection    Plays the current selection
         """
         LiveUtils.playSelection()
         
     def playClipCB(self, msg, source):
-        """Called when a /elc/play/clip message is received.
+        """Called when a /clip/play message is received.
 
         Messages:
-        /elc/play/clip     (int track, int clip)   Launches clip number clip in track number track
+        /clip/play     (int track, int clip)   Launches clip number clip in track number track
         """
         if len(msg) == 4:
-            track = msg[2]
-            clip = msg[3]
+            track = int(msg[2])
+            clip = int(msg[3])
             LiveUtils.launchClip(track, clip)
             
     def playSceneCB(self, msg, source):
-        """Called when a /elc/play/scene message is received.
+        """Called when a /play/scene message is received.
 
         Messages:
-        /elc/play/scene    (int scene)     Launches scene number scene
+        /play/scene    (int scene)     Launches scene number scene
         """
         if len(msg) == 3:
             scene = msg[2]
             LiveUtils.launchScene(scene)
     
     def stopCB(self, msg, source):
-        """Called when a /elc/stop message is received.
+        """Called when a /stop message is received.
 
         Messages:
-        /elc/stop              Stops playing the song
+        /stop              Stops playing the song
         """
         LiveUtils.stop()
         
     def stopClipCB(self, msg, source):
-        """Called when a /elc/stop/clip message is received.
+        """Called when a /stop/clip message is received.
 
         Messages:
-        /elc/stop/clip     (int track, int clip)   Stops clip number clip in track number track
+        /stop/clip     (int track, int clip)   Stops clip number clip in track number track
         """
         if len(msg) == 4:
             track = msg[2]
@@ -333,32 +289,27 @@ class LiveOSCCallbacks:
             LiveUtils.stopClip(track, clip)
 
     def stopTrackCB(self, msg, source):
-        """Called when a /elc/stop/track message is received.
+        """Called when a /stop/track message is received.
 
         Messages:
-        /elc/stop/track     (int track, int clip)   Stops track number track
+        /stop/track     (int track, int clip)   Stops track number track
         """
         if len(msg) == 3:
             track = msg[2]
             LiveUtils.stopTrack(track)
 
-    def scenesCB(self, msg, source):
-        """Called when a /elc/scenes message is received.
 
-        Messages:
-        /elc/scenes        no argument or 'query'  Returns the total number of scenes
+    ###################################################################################################################
+    #######################################      SCENE MANAGEMENT        ##############################################
+    ###################################################################################################################
 
-        """
-        if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
-            sceneTotal = len(LiveUtils.getScenes())
-            self.oscEndpoint.send("/elc/scenes", (sceneTotal))
-            return
+
 
     def sceneCB(self, msg, source):
-        """Called when a /elc/scene message is received.
+        """Called when a /scene message is received.
         
         Messages:
-        /elc/scene         no argument or 'query'  Returns the currently playing scene number
+        /scene         no argument or 'query'  Returns the currently selected scene index
         """
         if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
             selected_scene = LiveUtils.getSong().view.selected_scene
@@ -370,32 +321,46 @@ class LiveOSCCallbacks:
                 if scene == selected_scene:
                     selected_index = index
                     
-            self.oscEndpoint.send("/elc/scene", (selected_index))
+            self.oscEndpoint.send("/scene", (selected_index))
             
         elif len(msg) == 3:
             scene = msg[2]
             LiveUtils.getSong().view.selected_scene = LiveUtils.getSong().scenes[scene]
 
-    def tracksCB(self, msg, source):
-        """Called when a /elc/tracks message is received.
+    def scenecountCB(self, msg, source):
+        """Called when a /scenecount message is received.
 
         Messages:
-        /elc/tracks       no argument or 'query'  Returns the total number of scenes
+        /scenecount       no argument or 'query'  Returns the total number of scenes
 
         """
         if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
             trackTotal = len(LiveUtils.getTracks())
-            self.oscEndpoint.send("/elc/tracks", (trackTotal))
+            self.oscEndpoint.send("/tracks", (trackTotal))
             return
+
+    def scenesCB(self, msg, source):
+        """Called when a /scenes message is received.
+
+        Messages:
+        /scenes        no argument or 'query'  Returns the total number of scenes
+
+        """
+        if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
+            sceneTotal = len(LiveUtils.getScenes())
+            self.oscEndpoint.send("/scenes", (sceneTotal))
+            return
+
+    
 
 
     def nameSceneCB(self, msg, source):
-        """Called when a /elc/name/scene message is received.
+        """Called when a /scene/name message is received.
 
         Messages:
-        /elc/name/scene                            Returns a a series of all the scene names in the form /elc/name/scene (int scene, string name)
-        /elc/name/scene    (int scene)             Returns a single scene's name in the form /elc/name/scene (int scene, string name)
-        /elc/name/scene    (int scene, string name)Sets scene number scene's name to name
+        /scene/name                            Returns a a series of all the scene names in the form /scene/name (int scene, string name)
+        /scene/name    (int scene)             Returns a single scene's name in the form /scene/name (int scene, string name)
+        /scene/name    (int scene, string name)Sets scene number scene's name to name
 
         """        
         #Requesting all scene names
@@ -403,14 +368,14 @@ class LiveOSCCallbacks:
             bundle = OSC.OSCBundle()
             sceneNumber = 0
             for scene in LiveUtils.getScenes():
-                bundle.append("/elc/name/scene", (sceneNumber, str(scene.name)))
+                bundle.append("/scene/name", (sceneNumber, str(scene.name)))
                 sceneNumber = sceneNumber + 1
             self.oscEndpoint.sendMessage(bundle)
             return
         #Requesting a single scene name
         if len(msg) == 3:
             sceneNumber = msg[2]
-            self.oscEndpoint.send("/elc/name/scene", (sceneNumber, str(LiveUtils.getScene(sceneNumber).name)))
+            self.oscEndpoint.send("/scene/name", (sceneNumber, str(LiveUtils.getScene(sceneNumber).name)))
             return
         #renaming a scene
         if len(msg) == 4:
@@ -419,9 +384,9 @@ class LiveOSCCallbacks:
             LiveUtils.getScene(sceneNumber).name = name
 
     def nameSceneBlockCB(self, msg, source):
-        """Called when a /elc/name/sceneblock message is received.
+        """Called when a /name/sceneblock message is received.
 
-        /elc/name/clipblock    (int offset, int blocksize) Returns a list of blocksize scene names starting at offset
+        /name/clipblock    (int offset, int blocksize) Returns a list of blocksize scene names starting at offset
         """
         if len(msg) == 4:
             block = []
@@ -429,16 +394,112 @@ class LiveOSCCallbacks:
             blocksize = msg[3]
             for scene in range(0, blocksize):
                 block.extend([str(LiveUtils.getScene(sceneOffset+scene).name)])                            
-            self.oscEndpoint.send("/elc/name/sceneblock", block)
+            self.oscEndpoint.send("/sceneblock/name", block)
+
+    
+    
+
+    def setPlayModeCB(self, msg, source):
+        ClipMonitor.playMode = str(msg[2])
+        self.oscEndpoint.send("/playMode", msg[2])
+        if debug:
+            log("setPlayModeCB called by OSC with message: " + str(msg[2]))
+
+
+    def sigCB(self, msg, source):
+        """ Called when a /clip/signature message is recieved
+        """
+        track = msg[2]
+        clip = msg[3]
+        c = LiveUtils.getSong().tracks[track].clip_slots[clip].clip
+        
+        if len(msg) == 4:
+            self.oscEndpoint.send("/clip/signature", (track, clip, c.signature_numerator, c.signature_denominator))
+            
+        if len(msg) == 6:
+            self.oscEndpoint.send("/clip/signature", 1)
+            c.signature_denominator = msg[5]
+            c.signature_numerator = msg[4]
+
+    def warpingCB(self, msg, source):
+        """ Called when a /clip/warping message is recieved
+        """
+        track = msg[2]
+        clip = msg[3]
+        
+        
+        if len(msg) == 4:
+            state = LiveUtils.getSong().tracks[track].clip_slots[clip].clip.warping
+            self.oscEndpoint.send("/clip/warping", (track, clip, int(state)))
+        
+        elif len(msg) == 5:
+            LiveUtils.getSong().tracks[track].clip_slots[clip].clip.warping = msg[4]
+
+    def selectionCB(self, msg, source):
+        """ Called when a /selection message is received
+        """
+        if len(msg) == 6:
+            self.c_instance.set_session_highlight(msg[2], msg[3], msg[4], msg[5], 0)
+
+    def trackxfaderCB(self, msg, source):
+        """ Called when a /track/crossfader or /return/crossfader message is received
+        """
+        ty = msg[0] == '/return/crossfader' and 1 or 0
+    
+        if len(msg) == 3:
+            track = msg[2]
+        
+            if ty == 1:
+                assign = LiveUtils.getSong().return_tracks[track].mixer_device.crossfade_assign
+                name   = LiveUtils.getSong().return_tracks[track].mixer_device.crossfade_assignments.values[assign]
+            
+                self.oscEndpoint.send("/return/crossfader", (track, str(assign), str(name)))
+            else:
+                assign = LiveUtils.getSong().tracks[track].mixer_device.crossfade_assign
+                name   = LiveUtils.getSong().tracks[track].mixer_device.crossfade_assignments.values[assign]
+            
+                self.oscEndpoint.send("/track/crossfader", (track, str(assign), str(name)))
+
+            
+        elif len(msg) == 4:
+            track = msg[2]
+            assign = msg[3]
+            
+            if ty == 1:
+                LiveUtils.getSong().return_tracks[track].mixer_device.crossfade_assign = assign
+            else:
+                LiveUtils.getSong().tracks[track].mixer_device.crossfade_assign = assign
+
+    
+
+    # def nextCueCB(self, msg, source):
+    #     """Called when a /next/cue message is received.
+
+    #     Messages:
+    #     /next/cue              Jumps to the next cue point
+    #     """
+    #     LiveUtils.jumpToNextCue()
+        
+    # def prevCueCB(self, msg, source):
+    #     """Called when a /prev/cue message is received.
+
+    #     Messages:
+    #     /prev/cue              Jumps to the previous cue point
+    #     """
+    #     LiveUtils.jumpToPrevCue()
+        
+    
+
+    
             
             
     def nameTrackCB(self, msg, source):
-        """Called when a /elc/name/track message is received.
+        """Called when a /name/track message is received.
 
         Messages:
-        /elc/name/track                            Returns a a series of all the track names in the form /elc/name/track (int track, string name)
-        /elc/name/track    (int track)             Returns a single track's name in the form /elc/name/track (int track, string name)
-        /elc/name/track    (int track, string name)Sets track number track's name to name
+        /track/name                            Returns a a series of all the track names in the form /track/name (int track, string name)
+        /track/name   (int track)             Returns a single track's name in the form /track/name (int track, string name)
+        /track/name    (int track, string name)Sets track number track's name to name
 
         """
         #Requesting all track names
@@ -446,14 +507,14 @@ class LiveOSCCallbacks:
             trackNumber = 0
             bundle = OSC.OSCBundle()
             for track in LiveUtils.getTracks():
-                bundle.append("/elc/name/track", (trackNumber, str(track.name)))
+                bundle.append("/track/name", (trackNumber, str(track.name)))
                 trackNumber = trackNumber + 1
             self.oscEndpoint.sendMessage(bundle)
             return
         #Requesting a single track name
         if len(msg) == 3:
             trackNumber = msg[2]
-            self.oscEndpoint.send("/elc/name/track", (trackNumber, str(LiveUtils.getTrack(trackNumber).name)))
+            self.oscEndpoint.send("/track/name", (trackNumber, str(LiveUtils.getTrack(trackNumber).name)))
             return
         #renaming a track
         if len(msg) == 4:
@@ -462,9 +523,9 @@ class LiveOSCCallbacks:
             LiveUtils.getTrack(trackNumber).name = name
 
     def nameTrackBlockCB(self, msg, source):
-        """Called when a /elc/name/trackblock message is received.
+        """Called when a /name/trackblock message is received.
 
-        /elc/name/trackblock    (int offset, int blocksize) Returns a list of blocksize track names starting at offset
+        /name/trackblock    (int offset, int blocksize) Returns a list of blocksize track names starting at offset
         """
         if len(msg) == 4:
             block = []
@@ -472,22 +533,22 @@ class LiveOSCCallbacks:
             blocksize = msg[3]
             for track in range(0, blocksize):
                 block.extend([str(LiveUtils.getTrack(trackOffset+track).name)])                            
-            self.oscEndpoint.send("/elc/name/trackblock", block)
+            self.oscEndpoint.send("/trackblock/name", block)
 
     def nameClipBlockCB(self, msg, source):
-        """Called when a /elc/name/clipblock message is received.
+        """Called when a /name/clipblock message is received.
 
-        /elc/name/clipblock    (int track, int clip, blocksize x/tracks, blocksize y/clipslots) Returns a list of clip names for a block of clips (int blockX, int blockY, clipname)
+        /clipblock/name    (int track, int clip, blocksize x/tracks, blocksize y/clipslots) Returns a list of clip names for a block of clips (int blockX, int blockY, clipname)
 
         """
         #Requesting a block of clip names X1 Y1 X2 Y2 where X1,Y1 is the first clip (track, clip) of the block, X2 the number of tracks to cover and Y2 the number of scenes
         
         if len(msg) == 6:
             block = []
-            trackOffset = msg[2]
-            clipOffset = msg[3]
-            blocksizeX = msg[4]
-            blocksizeY = msg[5]
+            trackOffset = int(msg[2])
+            clipOffset = int(msg[3])
+            blocksizeX = int(msg[4])
+            blocksizeY = int(msg[5])
             for clip in range(0, blocksizeY):
                 for track in range(0, blocksizeX):
                         trackNumber = trackOffset+track
@@ -497,17 +558,17 @@ class LiveOSCCallbacks:
                         else:
                             block.extend([""])
                             
-            self.oscEndpoint.send("/elc/name/clipblock", block)
+            self.oscEndpoint.send("/clipbock/name", block)
 
 
 
     def nameClipCB(self, msg, source):
-        """Called when a /elc/name/clip message is received.
+        """Called when a /clip/name message is received.
 
         Messages:
-        /elc/name/clip                                      Returns a a series of all the clip names in the form /elc/name/clip (int track, int clip, string name)
-        /elc/name/clip    (int track, int clip)             Returns a single clip's name in the form /elc/name/clip (int clip, string name)
-        /elc/name/clip    (int track, int clip, string name)Sets clip number clip in track number track's name to name
+        /clip/name                                      Returns a a series of all the clip names in the form /clip/name (int track, int clip, string name)
+        /clip/name    (int track, int clip)             Returns a single clip's name in the form /clip/name (int clip, string name)
+        /clip/name    (int track, int clip, string name)Sets clip number clip in track number track's name to name
 
         """
         #Requesting all clip names
@@ -518,7 +579,7 @@ class LiveOSCCallbacks:
                 bundle = OSC.OSCBundle()
                 for clipSlot in track.clip_slots:
                     if clipSlot.clip != None:
-                        bundle.append("/elc/name/clip", (trackNumber, clipNumber, str(clipSlot.clip.name), clipSlot.clip.color))
+                        bundle.append("/clip/name", (trackNumber, clipNumber, str(clipSlot.clip.name), clipSlot.clip.color))
                     clipNumber = clipNumber + 1
                 self.oscEndpoint.sendMessage(bundle)
                 clipNumber = 0
@@ -528,7 +589,7 @@ class LiveOSCCallbacks:
         if len(msg) == 4:
             trackNumber = msg[2]
             clipNumber = msg[3]
-            self.oscEndpoint.send("/elc/name/clip", (trackNumber, clipNumber, str(LiveUtils.getClip(trackNumber, clipNumber).name), LiveUtils.getClip(trackNumber, clipNumber).color))
+            self.oscEndpoint.send("/clip/name", (trackNumber, clipNumber, str(LiveUtils.getClip(trackNumber, clipNumber).name), LiveUtils.getClip(trackNumber, clipNumber).color))
             return
         #renaming a clip
         if len(msg) >= 5:
@@ -544,29 +605,29 @@ class LiveOSCCallbacks:
             LiveUtils.getClip(trackNumber, clipNumber).color = color
 
     def addNoteCB(self, msg, source):
-        """Called when a /elc/clip/add_note message is received
+        """Called when a /clip/add_note message is received
 
         Messages:
-        /elc/clip/add_note (int pitch) (double time) (double duration) (int velocity) (bool muted)    Add the given note to the clip
+        /clip/add_note (int pitch) (double time) (double duration) (int velocity) (bool muted)    Add the given note to the clip
         """
         trackNumber = msg[2]
         clipNumber = msg[3]
-        pitch = msg[4]
+        pitch = int(msg[4])
         time = msg[5]
         duration = msg[6]
-        velocity = msg[7]
+        velocity = int(msg[7])
         muted = msg[8]
         LiveUtils.getClip(trackNumber, clipNumber).deselect_all_notes()
 
         notes = ((pitch, time, duration, velocity, muted),)
         LiveUtils.getClip(trackNumber, clipNumber).replace_selected_notes(notes)
-        self.oscEndpoint.send('/elc/clip/note', (trackNumber, clipNumber, pitch, time, duration, velocity, muted))
+        self.oscEndpoint.send('/clip/note', (trackNumber, clipNumber, pitch, time, duration, velocity, muted))
 
     def getNotesCB(self, msg, source):
-        """Called when a /elc/clip/notes message is received
+        """Called when a /clip/notes message is received
 
         Messages:
-        /elc/clip/notes    Return all notes in the clip in /elc/clip/note messages.  Each note is sent in the format
+        /clip/notes    Return all notes in the clip in /clip/note messages.  Each note is sent in the format
                             (int trackNumber) (int clipNumber) (int pitch) (double time) (double duration) (int velocity) (int muted)
         """
         trackNumber = msg[2]
@@ -581,13 +642,13 @@ class LiveOSCCallbacks:
             muted = 0
             if note[4]:
                 muted = 1
-            bundle.append('/elc/clip/note', (trackNumber, clipNumber, pitch, time, duration, velocity, muted))
+            bundle.append('/clip/note', (trackNumber, clipNumber, pitch, time, duration, velocity, muted))
         self.oscEndpoint.sendMessage(bundle)
 
     def createClipCB(self, msg, source):
         """
         Messages:
-        /elc/clip/create (int track, int slot, float length)
+        /clip/create (int track, int slot, float length)
         Create a clip in [track, slot], length [length] beats
         """
         clipSlots = LiveUtils.getClipSlots()
@@ -602,7 +663,7 @@ class LiveOSCCallbacks:
     def deleteClipCB(self, msg, source):
         """
         Messages:
-        /elc/clip/delete (int track, int slot)
+        /clip/delete (int track, int slot)
         Delete clip at [track, slot]
         """
         clipSlots = LiveUtils.getClipSlots()
@@ -614,10 +675,10 @@ class LiveOSCCallbacks:
         clipslot.delete_clip()
     
     def armTrackCB(self, msg, source):
-        """Called when a /elc/arm message is received.
+        """Called when a /arm message is received.
 
         Messages:
-        /elc/arm     (int track)   (int armed/disarmed)     Arms track number track
+        /arm     (int track)   (int armed/disarmed)     Arms track number track
         """
         track = msg[2]
         
@@ -629,15 +690,15 @@ class LiveOSCCallbacks:
         # Return arm status        
         elif len(msg) == 3:
             status = LiveUtils.getTrack(track).arm
-            self.oscEndpoint.send("/elc/arm", (track, int(status)))     
+            self.oscEndpoint.send("/arm", (track, int(status)))     
             
     def muteTrackCB(self, msg, source):
-        """Called when a /elc/mute message is received.
+        """Called when a /mute message is received.
 
         Messages:
-        /elc/mute     (int track)   Mutes track number track
+        /mute     (int track)   Mutes track number track
         """
-        ty = msg[0] == '/elc/return/mute' and 1 or 0
+        ty = msg[0] == '/return/mute' and 1 or 0
         track = msg[2]
             
         if len(msg) == 4:
@@ -649,11 +710,11 @@ class LiveOSCCallbacks:
         elif len(msg) == 3:
             if ty == 1:
                 status = LiveUtils.getSong().return_tracks[track].mute
-                self.oscEndpoint.send("/elc/return/mute", (track, int(status)))
+                self.oscEndpoint.send("/return/mute", (track, int(status)))
                 
             else:
                 status = LiveUtils.getTrack(track).mute
-                self.oscEndpoint.send("/elc/mute", (track, int(status)))
+                self.oscEndpoint.send("/mute", (track, int(status)))
 
     def deactivateCB(self, msg, source):
         for track in LiveUtils.getTracks():
@@ -782,12 +843,12 @@ class LiveOSCCallbacks:
             log("Exception: %s" % e)
 
     def soloTrackCB(self, msg, source):
-        """Called when a /elc/solo message is received.
+        """Called when a /solo message is received.
 
         Messages:
-        /elc/solo     (int track)   Solos track number track
+        /solo     (int track)   Solos track number track
         """
-        ty = msg[0] == '/elc/return/solo' and 1 or 0
+        ty = msg[0] == '/return/solo' and 1 or 0
         track = msg[2]
         
         if len(msg) == 4:
@@ -799,28 +860,28 @@ class LiveOSCCallbacks:
         elif len(msg) == 3:
             if ty == 1:
                 status = LiveUtils.getSong().return_tracks[track].solo
-                self.oscEndpoint.send("/elc/return/solo", (track, int(status)))
+                self.oscEndpoint.send("/return/solo", (track, int(status)))
                 
             else:
                 status = LiveUtils.getTrack(track).solo
-                self.oscEndpoint.send("/elc/solo", (track, int(status)))
+                self.oscEndpoint.send("/solo", (track, int(status)))
             
     def volumeCB(self, msg, source):
-        """Called when a /elc/volume message is received.
+        """Called when a /volume message is received.
 
         Messages:
-        /elc/volume     (int track)                            Returns the current volume of track number track as: /elc/volume (int track, float volume(0.0 to 1.0))
-        /elc/volume     (int track, float volume(0.0 to 1.0))  Sets track number track's volume to volume
+        /volume     (int track)                            Returns the current volume of track number track as: /volume (int track, float volume(0.0 to 1.0))
+        /volume     (int track, float volume(0.0 to 1.0))  Sets track number track's volume to volume
         """
-        if msg[0] == '/elc/return/volume':
+        if msg[0] == '/return/volume':
             ty = 1
-        elif msg[0] == '/elc/master/volume':
+        elif msg[0] == '/master/volume':
             ty = 2
         else:
             ty = 0
         
         if len(msg) == 2 and ty == 2:
-            self.oscEndpoint.send("/elc/master/volume", LiveUtils.getSong().master_track.mixer_device.volume.value)
+            self.oscEndpoint.send("/master/volume", LiveUtils.getSong().master_track.mixer_device.volume.value)
         
         elif len(msg) == 3 and ty == 2:
             volume = float(msg[2])
@@ -839,28 +900,28 @@ class LiveOSCCallbacks:
             track = int(msg[2])
 
             if ty == 1:
-                self.oscEndpoint.send("/elc/return/volume", (track, LiveUtils.getSong().return_tracks[track].mixer_device.volume.value))
+                self.oscEndpoint.send("/return/volume", (track, LiveUtils.getSong().return_tracks[track].mixer_device.volume.value))
             
             else:
-                self.oscEndpoint.send("/elc/volume", (track, LiveUtils.trackVolume(track)))
+                self.oscEndpoint.send("/volume", (track, LiveUtils.trackVolume(track)))
             
     def panCB(self, msg, source):
-        """Called when a /elc/pan message is received.
+        """Called when a /pan message is received.
 
         Messages:
-        /elc/pan     (int track)                            Returns the pan of track number track as: /elc/pan (int track, float pan(-1.0 to 1.0))
-        /elc/pan     (int track, float pan(-1.0 to 1.0))    Sets track number track's pan to pan
+        /pan     (int track)                            Returns the pan of track number track as: /pan (int track, float pan(-1.0 to 1.0))
+        /pan     (int track, float pan(-1.0 to 1.0))    Sets track number track's pan to pan
 
         """
-        if msg[0] == '/elc/return/pan':
+        if msg[0] == '/return/pan':
             ty = 1
-        elif msg[0] == '/elc/master/pan':
+        elif msg[0] == '/master/pan':
             ty = 2
         else:
             ty = 0
         
         if len(msg) == 2 and ty == 2:
-            self.oscEndpoint.send("/elc/master/pan", LiveUtils.getSong().master_track.mixer_device.panning.value)
+            self.oscEndpoint.send("/master/pan", LiveUtils.getSong().master_track.mixer_device.panning.value)
         
         elif len(msg) == 3 and ty == 2:
             pan = msg[2]
@@ -879,21 +940,21 @@ class LiveOSCCallbacks:
             track = msg[2]
             
             if ty == 1:
-                self.oscEndpoint.send("/elc/pan", (track, LiveUtils.getSong().return_tracks[track].mixer_device.panning.value))
+                self.oscEndpoint.send("/pan", (track, LiveUtils.getSong().return_tracks[track].mixer_device.panning.value))
             
             else:
-                self.oscEndpoint.send("/elc/pan", (track, LiveUtils.trackPan(track)))
+                self.oscEndpoint.send("/pan", (track, LiveUtils.trackPan(track)))
 
             
     def sendCB(self, msg, source):
-        """Called when a /elc/send message is received.
+        """Called when a /send message is received.
 
         Messages:
-        /elc/send     (int track, int send)                              Returns the send level of send (send) on track number track as: /elc/send (int track, int send, float level(0.0 to 1.0))
-        /elc/send     (int track, int send, float level(0.0 to 1.0))     Sets the send (send) of track number (track)'s level to (level)
+        /send     (int track, int send)                              Returns the send level of send (send) on track number track as: /send (int track, int send, float level(0.0 to 1.0))
+        /send     (int track, int send, float level(0.0 to 1.0))     Sets the send (send) of track number (track)'s level to (level)
 
         """
-        ty = msg[0] == '/elc/return/send' and 1 or 0
+        ty = msg[0] == '/return/send' and 1 or 0
         track = msg[2]
         
         if len(msg) == 5:
@@ -908,10 +969,10 @@ class LiveOSCCallbacks:
         elif len(msg) == 4:
             send = msg[3]
             if ty == 1:
-                self.oscEndpoint.send("/elc/return/send", (track, send, float(LiveUtils.getSong().return_tracks[track].mixer_device.sends[send].value)))
+                self.oscEndpoint.send("/return/send", (track, send, float(LiveUtils.getSong().return_tracks[track].mixer_device.sends[send].value)))
 
             else:
-                self.oscEndpoint.send("/elc/send", (track, send, float(LiveUtils.trackSend(track, send))))
+                self.oscEndpoint.send("/send", (track, send, float(LiveUtils.trackSend(track, send))))
             
         elif len(msg) == 3:
             if ty == 1:
@@ -925,50 +986,50 @@ class LiveOSCCallbacks:
                 so.append(float(sends[i].value))
                 
             if ty == 1:
-                self.oscEndpoint.send("/elc/return/send", tuple(so))
+                self.oscEndpoint.send("/return/send", tuple(so))
             else:
-                self.oscEndpoint.send("/elc/send", tuple(so))
+                self.oscEndpoint.send("/send", tuple(so))
                 
         
             
     def pitchCB(self, msg, source):
-        """Called when a /elc/pitch message is received.
+        """Called when a /clip/pitch message is received.
 
         Messages:
-        /elc/pitch     (int track, int clip)                                               Returns the pan of track number track as: /elc/pan (int track, int clip, int coarse(-48 to 48), int fine (-50 to 50))
-        /elc/pitch     (int track, int clip, int coarse(-48 to 48), int fine (-50 to 50))  Sets clip number clip in track number track's pitch to coarse / fine
+        /pitch     (int track, int clip)                                               Returns the pitch of clip as: /clip/pitch (int track, int clip, int coarse(-48 to 48), int fine (-50 to 50))
+        /pitch     (int track, int clip, int coarse(-48 to 48), int fine (-50 to 50))  Sets clip number clip in track number track's pitch to coarse / fine
 
         TODO: Unlike other callbacks, this does not include the track/pitch indices.
 
         """
         if len(msg) == 6:
-            track = msg[2]
-            clip = msg[3]
+            track = int(msg[2])
+            clip = int(msg[3])
             coarse = msg[4]
             fine = msg[5]
             LiveUtils.clipPitch(track, clip, coarse, fine)
         if len(msg) ==4:
-            track = msg[2]
-            clip = msg[3]
-            self.oscEndpoint.send("/elc/pitch", LiveUtils.clipPitch(track, clip))
+            track = int(msg[2])
+            clip = int(msg[3])
+            self.oscEndpoint.send("/pitch", LiveUtils.clipPitch(track, clip))
 
     def trackJump(self, msg, source):
-        """Called when a /elc/track/jump message is received.
+        """Called when a /track/jump message is received.
 
         Messages:
-        /elc/track/jump     (int track, float beats)   Jumps in track's currently running session clip by beats
+        /track/jump     (int track, float beats)   Jumps in track's currently running session clip by beats
         """
         if len(msg) == 4:
-            track = msg[2]
-            beats = msg[3]
+            track = int(msg[2])
+            beats = int(msg[3])
             track = LiveUtils.getTrack(track)
             track.jump_in_running_session_clip(beats)
 
     def trackInfoCB(self, msg, source):
-        """Called when a /elc/track/info message is received.
+        """Called when a /track/info message is received.
 
         Messages:
-        /elc/track/info     (int track)   Returns clip slot status' for all clips in a track in the form /elc/track/info (tracknumber, armed  (clipnumber, state, length))
+        /track/info     (int track)   Returns clip slot status' for all clips in a track in the form /track/info (tracknumber, armed  (clipnumber, state, length))
                                            [state: 1 = Has Clip, 2 = Playing, 3 = Triggered]
         """
         clipslots = LiveUtils.getClipSlots()
@@ -976,7 +1037,7 @@ class LiveOSCCallbacks:
         new = []
         if len(msg) == 3:
             new.append(clipslots[msg[2]])
-            tracknum = msg[2] - 1
+            tracknum = int(msg[2]) - 1
         else:
             new = clipslots
             tracknum = -1
@@ -1010,56 +1071,56 @@ class LiveOSCCallbacks:
                     
             tu = tuple(li)
             
-            self.oscEndpoint.send("/elc/track/info", tu)
+            self.oscEndpoint.send("/track/info", tu)
 
 
     def undoCB(self, msg, source):
-        """Called when a /elc/undo message is received.
+        """Called when a /undo message is received.
         
         Messages:
-        /elc/undo      Requests the song to undo the last action
+        /undo      Requests the song to undo the last action
         """
         LiveUtils.getSong().undo()
         
     def redoCB(self, msg, source):
-        """Called when a /elc/redo message is received.
+        """Called when a /redo message is received.
         
         Messages:
-        /elc/redo      Requests the song to redo the last action
+        /redo      Requests the song to redo the last action
         """
         LiveUtils.getSong().redo()
         
     def playClipSlotCB(self, msg, source):
-        """Called when a /elc/play/clipslot message is received.
+        """Called when a /clipslot/play message is received.
         
         Messages:
-        /elc/play/clipslot     (int track, int clip)   Launches clip number clip in track number track
+        /clipslot/play     (int track, int clip)   Launches clip number clip in track number track
         """
         if len(msg) == 4:
-            track_num = msg[2]
-            clip_num = msg[3]
+            track_num = int(msg[2])
+            clip_num = int(msg[3])
             track = LiveUtils.getTrack(track_num)
             clipslot = track.clip_slots[clip_num]
             clipslot.fire()
 
     def viewSceneCB(self, msg, source):
-        """Called when a /elc/scene/view message is received.
+        """Called when a /scene/view message is received.
         
         Messages:
-        /elc/scene/view     (int track)      Selects a track to view
+        /scene/view     (int track)      Selects a scene to view
         """
         
         if len(msg) == 3:
-            scene = msg[2]
+            scene = int(msg[2])
             LiveUtils.getSong().view.selected_scene = LiveUtils.getSong().scenes[scene]
             
     def viewTrackCB(self, msg, source):
-        """Called when a /elc/track/view message is received.
+        """Called when a /track/view message is received.
         
         Messages:
-        /elc/track/view     (int track)      Selects a track to view
+        /track/view     (int track)      Selects a track to view
         """
-        ty = msg[0] == '/elc/return/view' and 1 or 0
+        ty = msg[0] == '/return/view' and 1 or 0
         track_num = msg[2]
         
         if len(msg) == 3:
@@ -1074,10 +1135,10 @@ class LiveOSCCallbacks:
             #track.view.select_instrument()
             
     def mviewTrackCB(self, msg, source):
-        """Called when a /elc/master/view message is received.
+        """Called when a /master/view message is received.
         
         Messages:
-        /elc/track/view     (int track)      Selects a track to view
+        /track/view     (int track)      Selects a track to view
         """
         track = LiveUtils.getSong().master_track
 
@@ -1087,10 +1148,10 @@ class LiveOSCCallbacks:
         #track.view.select_instrument()
         
     def viewClipCB(self, msg, source):
-        """Called when a /elc/clip/view message is received.
+        """Called when a /clip/view message is received.
         
         Messages:
-        /elc/clip/view     (int track, int clip)      Selects a track to view
+        /clip/view     (int track, int clip)      Selects a track to view
         """
         track = LiveUtils.getSong().tracks[msg[2]]
         
@@ -1110,14 +1171,14 @@ class LiveOSCCallbacks:
         #LiveUtils.getSong().view.detail_clip = track.clip_slots[clip].clip
         # Live.Application.get_application().view.show_view("Detail/Clip")
 
-        self.oscEndpoint.send("/elc/clip/highlighted", (msg[2], msg[3]))
+        self.oscEndpoint.send("/clip/highlighted", (msg[2], msg[3]))
         
 
     def detailViewCB(self, msg, source):
-        """Called when a /elc/detail/view message is received. Used to switch between clip/track detail
+        """Called when a /detail/view message is received. Used to switch between clip/track detail
 
         Messages:
-        /elc/detail/view (int) Selects view where 0=clip detail, 1=track detail
+        /detail/view (int) Selects view where 0=clip detail, 1=track detail
         """
         if len(msg) == 3:
             if msg[2] == 0:
@@ -1126,13 +1187,13 @@ class LiveOSCCallbacks:
                 Live.Application.get_application().view.show_view("Detail/DeviceChain")
 
     def viewDeviceCB(self, msg, source):
-        """Called when a /elc/track/device/view message is received.
+        """Called when a /track/device/view message is received.
         
         Messages:
-        /elc/track/device/view     (int track)      Selects a track to view
+        /track/device/view     (int track)      Selects a track to view
         """
-        ty = msg[0] == '/elc/return/device/view' and 1 or 0
-        track_num = msg[2]
+        ty = msg[0] == '/return/device/view' and 1 or 0
+        track_num = int(msg[2])
         
         if len(msg) == 4:
             if ty == 1:
@@ -1153,31 +1214,31 @@ class LiveOSCCallbacks:
             Live.Application.get_application().view.show_view("Detail/DeviceChain")
         
     def overdubCB(self, msg, source):
-        """Called when a /elc/overdub message is received.
+        """Called when a /overdub message is received.
         
         Messages:
-        /elc/overdub     (int on/off)      Enables/disables overdub
+        /overdub     (int on/off)      Enables/disables overdub
         """        
         if len(msg) == 3:
             overdub = msg[2]
             LiveUtils.getSong().overdub = overdub
 
     def stateCB(self, msg, source):
-        """Called when a /elc/state is received.
+        """Called when a /state is received.
         
         Messages:
-        /elc/state                    Returns the current tempo and overdub status
+        /state                    Returns the current tempo and overdub status
         """
         if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
             tempo = LiveUtils.getTempo()
             overdub = LiveUtils.getSong().overdub
-            self.oscEndpoint.send("/elc/state", (tempo, int(overdub)))
+            self.oscEndpoint.send("/state", (tempo, int(overdub)))
         
     def clipInfoCB(self,msg):
-        """Called when a /elc/clip/info message is received.
+        """Called when a /clip/info message is received.
         
         Messages:
-        /elc/clip/info     (int track, int clip)      Gets the status of a single clip in the form  /elc/clip/info (tracknumber, clipnumber, state)
+        /clip/info     (int track, int clip)      Gets the status of a single clip in the form  /clip/info (tracknumber, clipnumber, state)
                                                        [state: 1 = Has Clip, 2 = Playing, 3 = Triggered]
         """
         
@@ -1197,15 +1258,15 @@ class LiveOSCCallbacks:
                 elif clip.is_triggered == 1:
                     playing = 3
 
-            self.oscEndpoint.send("/elc/clip/info", (trackNumber, clipNumber, playing))
+            self.oscEndpoint.send("/clip/info", (trackNumber, clipNumber, playing))
         
         return
 
     def muteClipCB(self, msg, source):
-        """Called when a /elc/clip/mute message is received.
+        """Called when a /clip/mute message is received.
         
         Messages:
-        /elc/clip/mute     (int track, int clip)      Selects a clip to mute.
+        /clip/mute     (int track, int clip)      Selects a clip to mute.
         """
         # use LogServer.py to read logs
         # log("muting")
@@ -1218,10 +1279,10 @@ class LiveOSCCallbacks:
             muted = msg[4]
             clip.muted = bool(muted)
         else:
-            self.oscEndpoint.send("/elc/clip/mute", (trackNumber, clipNumber, int(clip.muted)))
+            self.oscEndpoint.send("/clip/mute", (trackNumber, clipNumber, int(clip.muted)))
         
     def deviceCB(self, msg, source):
-        ty = msg[0] == '/elc/return/device' and 1 or 0
+        ty = msg[0] == '/return/device' and 1 or 0
         track = msg[2]
     
         if len(msg) == 4:
@@ -1238,7 +1299,7 @@ class LiveOSCCallbacks:
                 po.append(float(params[i].value))
                 po.append(str(params[i].name))
             
-            self.oscEndpoint.send(ty == 1 and "/elc/return/device/allparam" or "/elc/device/allparam", tuple(po))
+            self.oscEndpoint.send(ty == 1 and "/return/device/allparam" or "/device/allparam", tuple(po))
     
         elif len(msg) == 5:
             device = msg[3]
@@ -1249,7 +1310,7 @@ class LiveOSCCallbacks:
             else: 
                 p = LiveUtils.getSong().tracks[track].devices[device].parameters[param]
         
-            self.oscEndpoint.send(ty == 1 and "/elc/return/device/param" or "/elc/device/param", (track, device, param, p.value, str(p.name)))
+            self.oscEndpoint.send(ty == 1 and "/return/device/param" or "/device/param", (track, device, param, p.value, str(p.name)))
     
     
         elif len(msg) == 6:
@@ -1263,7 +1324,7 @@ class LiveOSCCallbacks:
                 LiveUtils.getSong().tracks[track].devices[device].parameters[param].value = value
 
     def devicerangeCB(self, msg, source):
-        ty = msg[0] == '/elc/return/device/range' and 1 or 0
+        ty = msg[0] == '/return/device/range' and 1 or 0
         track = msg[2]
     
         if len(msg) == 4:
@@ -1280,7 +1341,7 @@ class LiveOSCCallbacks:
                 po.append(params[i].min)
                 po.append(params[i].max)
             
-            self.oscEndpoint.send(ty == 1 and "/elc/return/device/range" or "/elc/device/range", tuple(po))
+            self.oscEndpoint.send(ty == 1 and "/return/device/range" or "/device/range", tuple(po))
     
         elif len(msg) == 5:
             device = msg[3]
@@ -1291,10 +1352,10 @@ class LiveOSCCallbacks:
             else: 
                 p = LiveUtils.getSong().tracks[track].devices[device].parameters[param]
         
-            self.oscEndpoint.send(ty == 1 and "/elc/return/device/range" or "/elc/device/range", (track, device, param, p.min, p.max))
+            self.oscEndpoint.send(ty == 1 and "/return/device/range" or "/device/range", (track, device, param, p.min, p.max))
                 
     def devicelistCB(self, msg, source):
-        ty = msg[0] == '/elc/return/devicelist' and 1 or 0
+        ty = msg[0] == '/return/devicelist' and 1 or 0
 
         track = msg[2]
     
@@ -1310,7 +1371,7 @@ class LiveOSCCallbacks:
                 do.append(i)
                 do.append(str(devices[i].name))
             
-            self.oscEndpoint.send(ty == 1 and "/elc/return/devicelist" or "/elc/devicelist", tuple(do))
+            self.oscEndpoint.send(ty == 1 and "/return/devicelist" or "/devicelist", tuple(do))
 
     def mdeviceCB(self, msg, source):
         if len(msg) == 3:
@@ -1324,7 +1385,7 @@ class LiveOSCCallbacks:
                 po.append(float(params[i].value))
                 po.append(str(params[i].name))
             
-            self.oscEndpoint.send("/elc/master/device", tuple(po))
+            self.oscEndpoint.send("/master/device", tuple(po))
     
         elif len(msg) == 4:
             device = msg[2]
@@ -1332,7 +1393,7 @@ class LiveOSCCallbacks:
             
             p = LiveUtils.getSong().master_track.devices[device].parameters[param]
         
-            self.oscEndpoint.send("/elc/master/device", (device, param, p.value, str(p.name)))
+            self.oscEndpoint.send("/master/device", (device, param, p.value, str(p.name)))
     
         elif len(msg) == 5:
             device = msg[2]
@@ -1353,7 +1414,7 @@ class LiveOSCCallbacks:
                 po.append(params[i].max)
                 po.append(params[i].min)
             
-            self.oscEndpoint.send("/elc/master/device/range", tuple(po))
+            self.oscEndpoint.send("/master/device/range", tuple(po))
     
         elif len(msg) == 4:
             device = msg[2]
@@ -1361,7 +1422,7 @@ class LiveOSCCallbacks:
             
             p = LiveUtils.getSong().master_track.devices[device].parameters[param]
         
-            self.oscEndpoint.send("/elc/master/device/range", (device, param, p.min, p.max))
+            self.oscEndpoint.send("/master/device/range", (device, param, p.min, p.max))
             
     def mdevicelistCB(self, msg, source):
         if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
@@ -1372,12 +1433,12 @@ class LiveOSCCallbacks:
                 do.append(i)
                 do.append(str(devices[i].name))
             
-            self.oscEndpoint.send("/elc/master/devicelist", tuple(do))            
+            self.oscEndpoint.send("/master/devicelist", tuple(do))            
             
             
     def crossfaderCB(self, msg, source):
         if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
-            self.oscEndpoint.send("/elc/master/crossfader", float(LiveUtils.getSong().master_track.mixer_device.crossfader.value))
+            self.oscEndpoint.send("/master/crossfader", float(LiveUtils.getSong().master_track.mixer_device.crossfader.value))
         
         elif len(msg) == 3:
             val = msg[2]
@@ -1385,47 +1446,47 @@ class LiveOSCCallbacks:
 
 
     def loopStateCB(self, msg, source):
-        type = msg[0] == '/elc/clip/loopstate_id' and 1 or 0
+        type = msg[0] == '/clip/loopstate_id' and 1 or 0
     
         trackNumber = msg[2]
         clipNumber = msg[3]
     
         if len(msg) == 4:
             if type == 1:
-                self.oscEndpoint.send("/elc/clip/loopstate", (trackNumber, clipNumber, int(LiveUtils.getClip(trackNumber, clipNumber).looping)))
+                self.oscEndpoint.send("/clip/loopstate", (trackNumber, clipNumber, int(LiveUtils.getClip(trackNumber, clipNumber).looping)))
             else:
-                self.oscEndpoint.send("/elc/clip/loopstate", (int(LiveUtils.getClip(trackNumber, clipNumber).looping)))    
+                self.oscEndpoint.send("/clip/loopstate", (int(LiveUtils.getClip(trackNumber, clipNumber).looping)))    
         
         elif len(msg) == 5:
             loopState = msg[4]
             LiveUtils.getClip(trackNumber, clipNumber).looping =  loopState
 
     def loopStartCB(self, msg, source):
-        type = msg[0] == '/elc/clip/loopstart_id' and 1 or 0
+        type = msg[0] == '/clip/loopstart_id' and 1 or 0
         
         trackNumber = msg[2]
         clipNumber = msg[3]
     
         if len(msg) == 4:
             if type == 1:
-                self.oscEndpoint.send("/elc/clip/loopstart", (trackNumber, clipNumber, float(LiveUtils.getClip(trackNumber, clipNumber).loop_start)))    
+                self.oscEndpoint.send("/clip/loopstart", (trackNumber, clipNumber, float(LiveUtils.getClip(trackNumber, clipNumber).loop_start)))    
             else:
-                self.oscEndpoint.send("/elc/clip/loopstart", (float(LiveUtils.getClip(trackNumber, clipNumber).loop_start)))    
+                self.oscEndpoint.send("/clip/loopstart", (float(LiveUtils.getClip(trackNumber, clipNumber).loop_start)))    
     
         elif len(msg) == 5:
             loopStart = msg[4]
             LiveUtils.getClip(trackNumber, clipNumber).loop_start = loopStart
             
     def loopEndCB(self, msg, source):
-        type = msg[0] == '/elc/clip/loopend_id' and 1 or 0
+        type = msg[0] == '/clip/loopend_id' and 1 or 0
     
         trackNumber = msg[2]
         clipNumber = msg[3]    
         if len(msg) == 4:
             if type == 1:
-                self.oscEndpoint.send("/elc/clip/loopend", (trackNumber, clipNumber, float(LiveUtils.getClip(trackNumber, clipNumber).loop_end)))
+                self.oscEndpoint.send("/clip/loopend", (trackNumber, clipNumber, float(LiveUtils.getClip(trackNumber, clipNumber).loop_end)))
             else:
-                self.oscEndpoint.send("/elc/clip/loopend", (float(LiveUtils.getClip(trackNumber, clipNumber).loop_end)))    
+                self.oscEndpoint.send("/clip/loopend", (float(LiveUtils.getClip(trackNumber, clipNumber).loop_end)))    
         
         elif len(msg) == 5:
             loopEnd = msg[4]
@@ -1433,7 +1494,7 @@ class LiveOSCCallbacks:
 
     def quantizationCB(self, msg, source):
         if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
-            self.oscEndpoint.send("/elc/quantization", int(LiveUtils.getSong().clip_trigger_quantization))
+            self.oscEndpoint.send("/quantization", int(LiveUtils.getSong().clip_trigger_quantization))
         
         elif len(msg) == 3:
             LiveUtils.getSong().clip_trigger_quantization = msg[2]
