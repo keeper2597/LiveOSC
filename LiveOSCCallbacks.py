@@ -50,30 +50,27 @@ class LiveOSCCallbacks:
         self.c_instance = c_instance
 
         ###################################################################################################################
-        #######################################      TIMING                  ##############################################
+        #######################################      GLOBAL                  ##############################################
         ###################################################################################################################
 
-        self.callbackManager.add("/tempo", self.tempoCB)
-        self.callbackManager.add("/time", self.timeCB)
-        self.callbackManager.add("/quantization", self.quantizationCB)
-        self.callbackManager.add("/selection", self.selectionCB)
-
-        ###################################################################################################################
-        #######################################      PLAY / STOP             ##############################################
-        ###################################################################################################################
-        
-        self.callbackManager.add("/play", self.playCB)
-        self.callbackManager.add("/play/continue", self.playContinueCB)
-        self.callbackManager.add("/play/selection", self.playSelectionCB)  
-        self.callbackManager.add("/stop", self.stopCB)
+        self.callbackManager.add("/global/tempo", self.tempoCB)
+        self.callbackManager.add("/global/time", self.timeCB)
+        self.callbackManager.add("/global/quantization", self.quantizationCB)
+        self.callbackManager.add("/global/selection", self.selectionCB)
+        self.callbackManager.add("global/undo", self.undoCB)
+        self.callbackManager.add("global/redo", self.redoCB)
+        self.callbackManager.add("/global/play", self.playCB)
+        self.callbackManager.add("/global/continue", self.playContinueCB)
+        self.callbackManager.add("/global/playselection", self.playSelectionCB)  
+        self.callbackManager.add("/global/stop", self.stopCB)
+        self.callbackManager.add("/global/stopclips", self.stopAllClipsCB)
 
         ###################################################################################################################
         #######################################      SCENES                  ##############################################
         ###################################################################################################################
 
         self.callbackManager.add("/scene/play", self.playSceneCB)
-        self.callbackManager.add("/scenes", self.scenesCB)
-        self.callbackManager.add("/scenecount", self.scenecountCB)
+        self.callbackManager.add("/scene/count", self.scenecountCB)
         self.callbackManager.add("/scene/name", self.nameSceneCB)
         self.callbackManager.add("/scene", self.sceneCB)
         self.callbackManager.add("/sceneblock/name", self.nameSceneBlockCB)
@@ -84,6 +81,7 @@ class LiveOSCCallbacks:
 
         self.callbackManager.add("/track/stop", self.stopTrackCB)
         self.callbackManager.add("/track/name", self.nameTrackCB)
+        self.callbackManager.add("/track/count", self.trackcountCB)
         self.callbackManager.add("/trackblock/name", self.nameTrackBlockCB)
         self.callbackManager.add("/track/arm", self.armTrackCB)
         self.callbackManager.add("/track/mute", self.muteTrackCB)
@@ -123,14 +121,6 @@ class LiveOSCCallbacks:
         self.callbackManager.add("/clip/mute", self.muteClipCB)
         self.callbackManager.add("/clipslot/play", self.playClipSlotCB)
 
-
-
-
-
-
-
-        self.callbackManager.add("/undo", self.undoCB)
-        self.callbackManager.add("/redo", self.redoCB)
         
         
         # self.callbackManager.add("/scene/view", self.viewSceneCB)
@@ -276,6 +266,14 @@ class LiveOSCCallbacks:
         /stop              Stops playing the song
         """
         LiveUtils.stop()
+
+    def stopAllClipsCB(self, msg, source):
+        """Called when a /stop/clips message is received.
+
+        Messages:
+        /stop              Stops playing the song
+        """
+        LiveUtils.stopClips()
         
     def stopClipCB(self, msg, source):
         """Called when a /stop/clip message is received.
@@ -327,11 +325,11 @@ class LiveOSCCallbacks:
             scene = msg[2]
             LiveUtils.getSong().view.selected_scene = LiveUtils.getSong().scenes[scene]
 
-    def scenecountCB(self, msg, source):
-        """Called when a /scenecount message is received.
+    def trackcountCB(self, msg, source):
+        """Called when a /trackcount message is received.
 
         Messages:
-        /scenecount       no argument or 'query'  Returns the total number of scenes
+        /trackcount       no argument or 'query'  Returns the total number of scenes
 
         """
         if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
@@ -339,17 +337,17 @@ class LiveOSCCallbacks:
             self.oscEndpoint.send("/tracks", (trackTotal))
             return
 
-    def scenesCB(self, msg, source):
-        """Called when a /scenes message is received.
+    def scenecountCB(self, msg, source):
+        """Called when a /scenecount message is received.
 
         Messages:
-        /scenes        no argument or 'query'  Returns the total number of scenes
+        /scenecount        no argument or 'query'  Returns the total number of scenes
 
         """
-        if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
-            sceneTotal = len(LiveUtils.getScenes())
-            self.oscEndpoint.send("/scenes", (sceneTotal))
-            return
+        #if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
+        sceneTotal = len(LiveUtils.getScenes())
+        self.oscEndpoint.send("/scenes", (sceneTotal))
+        return
 
     
 
@@ -374,14 +372,15 @@ class LiveOSCCallbacks:
             return
         #Requesting a single scene name
         if len(msg) == 3:
-            sceneNumber = msg[2]
+            sceneNumber = int(msg[2])
             self.oscEndpoint.send("/scene/name", (sceneNumber, str(LiveUtils.getScene(sceneNumber).name)))
             return
         #renaming a scene
         if len(msg) == 4:
-            sceneNumber = msg[2]
+            sceneNumber = int(msg[2])
             name = msg[3]
             LiveUtils.getScene(sceneNumber).name = name
+            self.oscEndpoint.send("/scene/name", (sceneNumber, str(LiveUtils.getScene(sceneNumber).name)))
 
     def nameSceneBlockCB(self, msg, source):
         """Called when a /name/sceneblock message is received.
@@ -390,8 +389,8 @@ class LiveOSCCallbacks:
         """
         if len(msg) == 4:
             block = []
-            sceneOffset = msg[2]
-            blocksize = msg[3]
+            sceneOffset = int(msg[2])
+            blocksize = int(msg[3])
             for scene in range(0, blocksize):
                 block.extend([str(LiveUtils.getScene(sceneOffset+scene).name)])                            
             self.oscEndpoint.send("/sceneblock/name", block)
@@ -571,7 +570,7 @@ class LiveOSCCallbacks:
         /clip/name    (int track, int clip, string name)Sets clip number clip in track number track's name to name
 
         """
-        
+
         #Requesting all clip names
         if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
             trackNumber = 0
