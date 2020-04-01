@@ -79,10 +79,10 @@ class LiveOSC:
 
         # for x in Live.Application.get_application().view.available_main_views():
         #     log(x)
-        
-        # Visible tracks listener
-        #if self.song().tracks_has_listener(self.refresh_state) != 1:
-        #    self.song().add_tracks_listener(self.refresh_state)
+         
+        #Visible tracks listener - do not remove without modifying refresh_state
+        if self.song().tracks_has_listener(self.refresh_state) != 1:
+           self.song().add_tracks_listener(self.refresh_state)
         
 ######################################################################
 # Standard Ableton Methods
@@ -212,9 +212,9 @@ class LiveOSC:
         block = []
         tracks = self.song().tracks
         
-        for track in range(0, blocksize):
+        for track in range(0, int(blocksize)):
             block.extend([str(tracks[trackOffset+track].name)])                            
-        self.oscEndpoint.send("/elc/name/trackblock", block)        
+        self.oscEndpoint.send("/elc/trackblock/name", block)        
 
 ######################################################################
 # Used Ableton Methods
@@ -239,12 +239,12 @@ class LiveOSC:
             
     def refresh_state(self):
         self.add_clip_listeners()
-        #self.add_mixer_listeners()
+        self.add_mixer_listeners()
         self.add_scene_listeners()
         self.add_tempo_listener()
-        #self.add_overdub_listener()
+        self.add_overdub_listener()
         self.add_tracks_listener()
-        #self.add_device_listeners()
+        self.add_device_listeners()
         self.add_transport_listener()
 
         trackNumber = 0
@@ -252,10 +252,10 @@ class LiveOSC:
        
         for track in self.song().tracks:
             bundle = OSC.OSCBundle()
-            bundle.append("/elc/name/track", (trackNumber, str(track.name)))
+            bundle.append("/elc/track/name", (trackNumber, str(track.name)))
             for clipSlot in track.clip_slots:
                 if clipSlot.clip != None:
-                    bundle.append("/elc/name/clip", (trackNumber, clipNumber, str(clipSlot.clip.name), clipSlot.clip.color))
+                    bundle.append("/elc/clip/name", (trackNumber, clipNumber, str(clipSlot.clip.name), clipSlot.clip.color))
                 clipNumber = clipNumber + 1
             clipNumber = 0
             trackNumber = trackNumber + 1
