@@ -65,13 +65,19 @@ class LiveOSCCallbacks:
         self.callbackManager.add("/global/stop", self.stopCB)
         self.callbackManager.add("/global/stopclips", self.stopAllClipsCB)
 
+
+        self.callbackManager.add("/scan/tracks", self.trackScanCB)
+        self.callbackManager.add("/scan/scenes", self.sceneScanCB)
+        self.callbackManager.add("/scan", self.scanCB)
+
         ###################################################################################################################
         #######################################      SCENES                  ##############################################
         ###################################################################################################################
 
         self.callbackManager.add("/scene/play", self.playSceneCB)
         self.callbackManager.add("/scene/count", self.scenecountCB)
-        self.callbackManager.add("/scene/name", self.nameSceneCB)
+        self.callbackManager.add("/scene/name", self.nameSceneCB)  #only for individual scenes now
+        self.callbackManager.add("/scene/scan", self.sceneScanCB)
         self.callbackManager.add("/scene", self.sceneCB)
         self.callbackManager.add("/sceneblock/name", self.nameSceneBlockCB)
 
@@ -349,27 +355,24 @@ class LiveOSCCallbacks:
         self.oscEndpoint.send("/scenes", (sceneTotal))
         return
 
-    
+    def sceneScanCB(self, msg, source):
+        #/scan/scenes                            Returns a a series of all the scene names in the form /scene/name (int scene, string name)
+        bundle = OSC.OSCBundle()
+        sceneNumber = 0
+        for scene in LiveUtils.getScenes():
+            bundle.append("/scan/scenes", (sceneNumber, str(scene.name)))
+            sceneNumber = sceneNumber + 1
+        self.oscEndpoint.sendMessage(bundle)
+        return
+
 
 
     def nameSceneCB(self, msg, source):
         """Called when a /scene/name message is received.
-
-        Messages:
-        /scene/name                            Returns a a series of all the scene names in the form /scene/name (int scene, string name)
         /scene/name    (int scene)             Returns a single scene's name in the form /scene/name (int scene, string name)
         /scene/name    (int scene, string name)Sets scene number scene's name to name
-
         """        
-        #Requesting all scene names
-        if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
-            bundle = OSC.OSCBundle()
-            sceneNumber = 0
-            for scene in LiveUtils.getScenes():
-                bundle.append("/scene/name", (sceneNumber, str(scene.name)))
-                sceneNumber = sceneNumber + 1
-            self.oscEndpoint.sendMessage(bundle)
-            return
+            
         #Requesting a single scene name
         if len(msg) == 3:
             sceneNumber = int(msg[2])
@@ -395,7 +398,24 @@ class LiveOSCCallbacks:
                 block.extend([str(LiveUtils.getScene(sceneOffset+scene).name)])                            
             self.oscEndpoint.send("/sceneblock/name", block)
 
-    
+    def scanCB(self, msg, source):
+        #/scan/scenes                            Returns a a series of all the scene names in the form /scene/name (int scene, string name)
+        fullBundle = OSC.OSCBundle()
+        sceneBundle = OSC.OSCBundle()
+        trackBundle = OSC.OSCBundle()
+        sceneNumber = 0
+        trackNumber = 0
+        for scene in LiveUtils.getScenes():
+            sceneBundle.append("/scan/scenes", (sceneNumber, str(scene.name)))
+            sceneNumber = sceneNumber + 1
+        for track in LiveUtils.getTracks():
+            trackType = 'MIDI' if track.has_midi_input else 'Audio'
+            trackBundle.append("/scan/tracks", (trackNumber, str(track.name), str(trackType)))
+            trackNumber = trackNumber + 1
+        fullBundle.append(sceneBundle)
+        fullBundle.append(trackBundle)
+        self.oscEndpoint.sendMessage(fullBundle)
+        return
     
 
     def setPlayModeCB(self, msg, source):
@@ -488,28 +508,25 @@ class LiveOSCCallbacks:
     #     LiveUtils.jumpToPrevCue()
         
     
-
+    def trackScanCB(self, msg, source):
+        #/scan/tracks                  Returns a a series of all the track names in the form /track/name (int track, string name)
+        #Requesting all track names
+        trackNumber = 0
+        bundle = OSC.OSCBundle()
+        for track in LiveUtils.getTracks():
+            bundle.append("/scan/tracks", (trackNumber, str(track.name)))
+            trackNumber = trackNumber + 1
+        self.oscEndpoint.sendMessage(bundle)
+        return
     
             
             
     def nameTrackCB(self, msg, source):
         """Called when a /name/track message is received.
-
         Messages:
-        /track/name                            Returns a a series of all the track names in the form /track/name (int track, string name)
         /track/name   (int track)             Returns a single track's name in the form /track/name (int track, string name)
         /track/name    (int track, string name)Sets track number track's name to name
-
-        """
-        #Requesting all track names
-        if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
-            trackNumber = 0
-            bundle = OSC.OSCBundle()
-            for track in LiveUtils.getTracks():
-                bundle.append("/track/name", (trackNumber, str(track.name)))
-                trackNumber = trackNumber + 1
-            self.oscEndpoint.sendMessage(bundle)
-            return
+        """ 
         #Requesting a single track name
         if len(msg) == 3:
             trackNumber = msg[2]
@@ -528,8 +545,8 @@ class LiveOSCCallbacks:
         """
         if len(msg) == 4:
             block = []
-            trackOffset = msg[2]
-            blocksize = msg[3]
+            trackOffset = int(msg[2])
+            blocksize = int(msg[3])
             for track in range(0, blocksize):
                 block.extend([str(LiveUtils.getTrack(trackOffset+track).name)])                            
             self.oscEndpoint.send("/trackblock/name", block)

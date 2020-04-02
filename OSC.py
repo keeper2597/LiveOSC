@@ -40,6 +40,8 @@ import time
 
 from Logger import log
 
+prefix = '/elc'
+
 def hexDump(bytes):
 	"""Useful utility; prints the string in hexadecimal"""
 	for i in range(len(bytes)):
@@ -53,7 +55,7 @@ def hexDump(bytes):
 class OSCMessage:
 	"""Builds typetagged OSC messages."""
 	def __init__(self, address='', msg=()):
-		self.address  = address
+		self.address  = prefix + address
 		self.typetags = ","
 		self.message  = ""
 
@@ -117,8 +119,8 @@ class OSCBundle:
 	def append(self, address, msg = None):
 		if isinstance(address, str):
 			self.items.append(OSCMessage(address, msg))
-		elif isinstance(address, OSCMessage):
-			# address really is an OSCMessage
+		elif isinstance(address, OSCMessage) or isinstance(address, OSCBundle):
+			# address really is an OSCMessage or OSCBundle
 			self.items.append(address)
 		else:
 			raise Exception('invalid type of first argument to OSCBundle.append(), need address string or OSCMessage, not ', str(type(address)))
@@ -264,7 +266,7 @@ class CallbackManager:
 	of decoded OSC arguments, including the address and
 	the typetags as the first two arguments."""
 
-	prefix = '/elc'
+	
 
 	def __init__(self):
 		self.callbacks = {}
@@ -297,7 +299,7 @@ class CallbackManager:
 			address = '/' + address
 
 		# add in our prefix
-		address = self.prefix + address
+		address = prefix + address
 		if callback == None:
 			del self.callbacks[address]
 		else:
