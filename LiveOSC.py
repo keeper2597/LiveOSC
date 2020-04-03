@@ -293,7 +293,7 @@ class LiveOSC:
                 
         if selected_index != self.track:
             self.track = selected_index
-            self.oscEndpoint.send("/track", (selected_index))
+            self.oscEndpoint.send("/track/selection", (selected_index))
 
     def scene_change(self):
         selected_scene = self.song().view.selected_scene
@@ -307,7 +307,7 @@ class LiveOSC:
                 
         if selected_index != self.scene:
             self.scene = selected_index
-            self.oscEndpoint.send("/scene", (selected_index))
+            self.oscEndpoint.send("/scene/selection", (selected_index))
 	
     def add_tempo_listener(self):
         self.rem_tempo_listener()
@@ -321,7 +321,7 @@ class LiveOSC:
     
     def tempo_change(self):
         tempo = LiveUtils.getTempo()
-        self.oscEndpoint.send("/tempo", (tempo))
+        self.oscEndpoint.send("/global/tempo", (tempo))
 	
     def add_transport_listener(self):
         if self.song().is_playing_has_listener(self.transport_change) != 1:
@@ -332,7 +332,7 @@ class LiveOSC:
             self.song().remove_is_playing_listener(self.transport_change)    
     
     def transport_change(self):
-        self.oscEndpoint.send("/play", (self.song().is_playing and 2 or 1))
+        self.oscEndpoint.send("/global/play", (self.song().is_playing and 2 or 1))
     
     def add_overdub_listener(self):
         self.rem_overdub_listener()
@@ -697,7 +697,7 @@ class LiveOSC:
         
     # Clip Callbacks
     def clip_name(self, clip, tid, cid):
-        self.oscEndpoint.send('/name/clip', (tid, cid, str(clip.name), clip.color))
+        self.oscEndpoint.send('/clip/name', (tid, cid, str(clip.name), clip.color))
     
     def clip_position(self, clip, tid, cid):
         #if self.check_md(1):

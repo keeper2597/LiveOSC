@@ -191,7 +191,7 @@ class LiveOSCCallbacks:
         /tempo (float tempo)   Set the tempo, replies with /tempo (float tempo)
         """
         if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
-            self.oscEndpoint.send("/tempo", LiveUtils.getTempo())
+            self.oscEndpoint.send("/global/tempo", LiveUtils.getTempo())
         
         elif len(msg) == 3:
             tempo = msg[2]
@@ -205,7 +205,7 @@ class LiveOSCCallbacks:
         /time (float time)    Set the time , replies with /time (float time)
         """
         if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
-            self.oscEndpoint.send("/time", float(LiveUtils.currentTime()))
+            self.oscEndpoint.send("/global/time", float(LiveUtils.currentTime()))
 
         elif len(msg) == 3:
             time = msg[2]
