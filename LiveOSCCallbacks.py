@@ -29,6 +29,8 @@ import ClipMonitor
 import sys
 import re
 import time
+import string
+import random
 
 from Logger import log
 
@@ -48,6 +50,11 @@ class LiveOSCCallbacks:
         self.callbackManager = oscEndpoint.callbackManager
 
         self.c_instance = c_instance
+
+        self.sceneIdentifier = " #cS"
+        self.trackIdentifier = " #cT"
+        self.clipIdentifier = " #cC"
+        self.clipSlotIdentifier = " #cL"
 
         ###################################################################################################################
         #######################################      GLOBAL                  ##############################################
@@ -75,6 +82,7 @@ class LiveOSCCallbacks:
         ###################################################################################################################
 
         self.callbackManager.add("/scene/play", self.playSceneCB)
+        self.callbackManager.add("/scene/play/id", self.playSceneIDCB)
         self.callbackManager.add("/scene/count", self.scenecountCB)
         self.callbackManager.add("/scene/name", self.nameSceneCB)  #only for individual scenes now
         self.callbackManager.add("/scene/scan", self.sceneScanCB)
@@ -183,6 +191,10 @@ class LiveOSCCallbacks:
 
         self.clip_notes_cache = {}
 
+    def makeID(self, stringLength=4):
+        lettersAndDigits = string.ascii_letters + string.digits
+        return ''.join(random.choice(lettersAndDigits) for i in range(stringLength))
+
     def tempoCB(self, msg, source):
         """Called when a /tempo message is received.
 
@@ -221,56 +233,37 @@ class LiveOSCCallbacks:
 
 
     def playCB(self, msg, source):
-        """Called when a /play message is received.
-
-        Messages:
-        /play              Starts the song playing
-        """
         LiveUtils.play()
     
     def playContinueCB(self, msg, source):
-        """Called when a /play/continue message is received.
-
-        Messages:
-        /play/continue     Continues playing the song from the current point
-        """
         LiveUtils.continuePlaying()
         
     def playSelectionCB(self, msg, source):
-        """Called when a /play/selection message is received.
-
-        Messages:
-        /play/selection    Plays the current selection
-        """
         LiveUtils.playSelection()
         
     def playClipCB(self, msg, source):
-        """Called when a /clip/play message is received.
-
-        Messages:
-        /clip/play     (int track, int clip)   Launches clip number clip in track number track
-        """
         if len(msg) == 4:
             track = int(msg[2])
             clip = int(msg[3])
             LiveUtils.launchClip(track, clip)
             
     def playSceneCB(self, msg, source):
-        """Called when a /scene/play message is received.
-
-        Messages:
-        /scene/play    (int scene)     Launches scene number scene
-        """
         if len(msg) == 3:
             scene = msg[2]
             LiveUtils.launchScene(scene)
+
+    def playSceneIDCB(self, msg, source):
+        if len(msg) == 3:
+            sceneID = msg[2]
+            for scene in LiveUtils.getScenes():
+                if scene.name.find(sceneID) != -1:
+                #if self.hasString(sceneID, scene.name):
+                    scene.fire()
+        else:
+            log("playSceneIDCB couldn't find a matching ID for:")
+            log(sceneID)
     
     def stopCB(self, msg, source):
-        """Called when a /stop message is received.
-
-        Messages:
-        /stop              Stops playing the song
-        """
         LiveUtils.stop()
 
     def stopAllClipsCB(self, msg, source):
@@ -400,15 +393,31 @@ class LiveOSCCallbacks:
 
     def scanCB(self, msg, source):
         #/scan/scenes                            Returns a a series of all the scene names in the form /scene/name (int scene, string name)
+        log("scanCB called")
         fullBundle = OSC.OSCBundle()
         sceneBundle = OSC.OSCBundle()
         trackBundle = OSC.OSCBundle()
         sceneNumber = 0
         trackNumber = 0
         for scene in LiveUtils.getScenes():
+            
+            #check to see if we already scanned this
+            alreadyScanned = scene.name.find(self.sceneIdentifier)
+            log(alreadyScanned)
+            #if self.hasString(self.sceneIdentifier, scene.name):
+            if (scene.name.find(self.sceneIdentifier) == -1):
+                scanID = self.sceneIdentifier + self.makeID()
+                scene.name = scene.name + scanID
+
             sceneBundle.append("/scan/scenes", (sceneNumber, str(scene.name)))
             sceneNumber = sceneNumber + 1
         for track in LiveUtils.getTracks():
+
+            #if self.hasString(self.trackIdentifier, track.name):
+            if (track.name.find(self.trackIdentifier) == -1):
+                scanID = self.trackIdentifier + self.makeID()
+                track.name = track.name + scanID
+
             trackType = 'MIDI' if track.has_midi_input else 'Audio'
             trackBundle.append("/scan/tracks", (trackNumber, str(track.name), str(trackType)))
             trackNumber = trackNumber + 1
