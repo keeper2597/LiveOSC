@@ -409,7 +409,29 @@ class LiveOSCCallbacks:
                 scanID = self.sceneIdentifier + self.makeID()
                 scene.name = scene.name + scanID
 
-            sceneBundle.append("/scan/scenes", (sceneNumber, str(scene.name)))
+            sceneBundle.append("/scan/scenes", (sceneNumber, str(scene.name), scene.tempo))
+
+            # check for clips
+            clipBundle = OSC.OSCBundle()
+            foundClip = False
+            slotNumber = 0
+            for slot in scene.clip_slots:
+                clip = slot.clip
+                if clip is not None:
+                    if (clip.name.find(self.clipIdentifier) == -1):
+                        scanID = self.clipIdentifier + self.makeID()
+                        clip.name = clip.name + scanID
+                    if clip.is_audio_clip:
+                        warping = clip.warping
+                    else:
+                        warping = False
+                    clipBundle.append("/scan/clips", (slotNumber, clip.name, clip.length, warping, clip.looping, clip.loop_start, clip.loop_end, clip.signature_numerator, clip.signature_denominator))
+                    foundClip = True
+                slotNumber = slotNumber + 1
+            if foundClip:
+                sceneBundle.append(clipBundle)
+
+
             sceneNumber = sceneNumber + 1
         for track in LiveUtils.getTracks():
 
