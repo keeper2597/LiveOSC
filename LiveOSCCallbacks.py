@@ -394,17 +394,42 @@ class LiveOSCCallbacks:
     def scanCB(self, msg, source):
         #/scan/scenes                            Returns a a series of all the scene names in the form /scene/name (int scene, string name)
         log("scanCB called")
+
         fullBundle = OSC.OSCBundle()
         sceneBundle = OSC.OSCBundle()
         trackBundle = OSC.OSCBundle()
-        sceneNumber = 0
+
+        #check for LiveControl listener track
+        firstTrack = LiveUtils.getTrack(0)
+        if firstTrack.name != "<!LCONTROL>":
+            LiveUtils.getSong().create_midi_track(0)
+            controlTrack = LiveUtils.getTrack(0)
+            controlTrack.name = "<!LCONTROL>"
+            controlTrack.mute = 1
+            for slot in controlTrack.clip_slots:
+                if not slot.has_clip:
+                    slot.create_clip(64.0)
+                    slot.clip.name = "<!LC>"
+
+        #cycle through the tracks for IDs
         trackNumber = 0
+        for track in LiveUtils.getTracks():
+
+            if (track.name.find(self.trackIdentifier) == -1):
+                if trackNumber != 0:
+                    scanID = self.trackIdentifier + self.makeID()
+                    track.name = track.name + scanID
+
+            trackType = 'MIDI' if track.has_midi_input else 'Audio'
+            trackBundle.append("/scan/tracks", (trackNumber, str(track.name), str(trackType)))
+            trackNumber = trackNumber + 1
+
+        fullBundle.append(trackBundle)
+
+        #cycle through the scenes for IDs
+        sceneNumber = 0
         for scene in LiveUtils.getScenes():
-            
-            #check to see if we already scanned this
-            alreadyScanned = scene.name.find(self.sceneIdentifier)
-            log(alreadyScanned)
-            #if self.hasString(self.sceneIdentifier, scene.name):
+
             if (scene.name.find(self.sceneIdentifier) == -1):
                 scanID = self.sceneIdentifier + self.makeID()
                 scene.name = scene.name + scanID
@@ -421,31 +446,20 @@ class LiveOSCCallbacks:
                     if (clip.name.find(self.clipIdentifier) == -1):
                         scanID = self.clipIdentifier + self.makeID()
                         clip.name = clip.name + scanID
-                    if clip.is_audio_clip:
-                        warping = clip.warping
-                    else:
-                        warping = False
+                    
+                    warping = True if clip.is_midi_clip else clip.warping
                     arguments = (slotNumber, str(clip.name), int(clip.length), str(warping), str(clip.looping), int(clip.loop_start), int(clip.loop_end), int(clip.signature_numerator), int(clip.signature_denominator))
                     clipBundle.append(OSC.OSCMessage("/scan/clips", arguments))
                     foundClip = True
+
                 slotNumber = slotNumber + 1
             if foundClip:
                 sceneBundle.append(clipBundle)
 
-
             sceneNumber = sceneNumber + 1
-        for track in LiveUtils.getTracks():
 
-            #if self.hasString(self.trackIdentifier, track.name):
-            if (track.name.find(self.trackIdentifier) == -1):
-                scanID = self.trackIdentifier + self.makeID()
-                track.name = track.name + scanID
-
-            trackType = 'MIDI' if track.has_midi_input else 'Audio'
-            trackBundle.append("/scan/tracks", (trackNumber, str(track.name), str(trackType)))
-            trackNumber = trackNumber + 1
         fullBundle.append(sceneBundle)
-        fullBundle.append(trackBundle)
+        
         self.oscEndpoint.sendMessage(fullBundle)
         return
     
@@ -1085,7 +1099,7 @@ class LiveOSCCallbacks:
         
         new = []
         if len(msg) == 3:
-            new.append(clipslots[msg[2]])
+            new.append(clipslots[int(msg[2])])
             tracknum = int(msg[2]) - 1
         else:
             new = clipslots

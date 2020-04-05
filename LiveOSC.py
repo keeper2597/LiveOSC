@@ -65,9 +65,9 @@ class LiveOSC:
       
         self.basicAPI = 0       
         self.oscEndpoint = RemixNet.OSCEndpoint()
-        self.oscEndpoint.send('/remix/oscserver/startup', 1)
+        self.oscEndpoint.send('/server/startup', 1)
         
-        log("LiveOSC initialized")
+        log("LiveControl initialized")
 
         #self.clipMonitor = ClipMonitor.ClipMonitor(0)
 
@@ -139,7 +139,7 @@ class LiveOSC:
                 self.time = 0
                 doc.add_current_song_time_listener(self.current_song_time_changed)
             except Exception, e:
-                self.oscEndpoint.send('/remix/echo', 'setting up basicAPI failed: %s' % e)
+                self.oscEndpoint.send('/server', 'setting up basicAPI failed: %s' % e)
                 log('setting up basicAPI failed: %s' % e);
                 return
             
@@ -231,7 +231,7 @@ class LiveOSC:
         
         self.song().remove_tracks_listener(self.refresh_state)
         
-        self.oscEndpoint.send('/remix/oscserver/shutdown', 1)
+        self.oscEndpoint.send('/server/shutdown', 1)
         self.oscEndpoint.shutdown()
             
     def build_midi_map(self, midi_map_handle):
@@ -361,7 +361,7 @@ class LiveOSC:
             self.song().remove_tracks_listener(self.tracks_change)
     
     def tracks_change(self):
-        self.oscEndpoint.send("/refresh", (1))
+        self.oscEndpoint.send("/global/refresh", (1))
 
     def rem_clip_listeners(self):
         for slot in self.slisten:
