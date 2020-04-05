@@ -425,7 +425,8 @@ class LiveOSCCallbacks:
                         warping = clip.warping
                     else:
                         warping = False
-                    clipBundle.append("/scan/clips", (slotNumber, clip.name, clip.length, warping, clip.looping, clip.loop_start, clip.loop_end, clip.signature_numerator, clip.signature_denominator))
+                    arguments = (slotNumber, str(clip.name), int(clip.length), str(warping), str(clip.looping), int(clip.loop_start), int(clip.loop_end), int(clip.signature_numerator), int(clip.signature_denominator))
+                    clipBundle.append(OSC.OSCMessage("/scan/clips", arguments))
                     foundClip = True
                 slotNumber = slotNumber + 1
             if foundClip:

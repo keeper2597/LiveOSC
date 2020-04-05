@@ -221,12 +221,12 @@ class LiveOSC:
 
     def disconnect(self):
         self.rem_clip_listeners()
-        self.rem_mixer_listeners()
+        #self.rem_mixer_listeners()
         self.rem_scene_listeners()
         self.rem_tempo_listener()
-        self.rem_overdub_listener()
+        #self.rem_overdub_listener()
         self.rem_tracks_listener()
-        self.rem_device_listeners()
+        #self.rem_device_listeners()
         self.rem_transport_listener()
         
         self.song().remove_tracks_listener(self.refresh_state)
@@ -239,14 +239,15 @@ class LiveOSC:
             
     def refresh_state(self):
         self.add_clip_listeners()
-        self.add_mixer_listeners()
+        #self.add_mixer_listeners()
         self.add_scene_listeners()
         self.add_tempo_listener()
-        self.add_overdub_listener()
+        #self.add_overdub_listener()
         self.add_tracks_listener()
-        self.add_device_listeners()
+        #self.add_device_listeners()
         self.add_transport_listener()
 
+        """
         trackNumber = 0
         clipNumber = 0
        
@@ -262,6 +263,7 @@ class LiveOSC:
             self.oscEndpoint.sendMessage(bundle)
         
         self.trBlock(0, len(self.song().tracks))
+        """
 
 ######################################################################
 # Add / Remove Listeners   
@@ -755,6 +757,7 @@ class LiveOSC:
         log("Clip changed x:" + str(x) + " y:" + str(y) + " status:" + str(playing)) 
         
     # Mixer Callbacks
+    """
     def mixerv_changestate(self, type, tid, track, r = 0):
         val = eval("track.mixer_device." + type + ".value")
         types = { "panning": "pan", "volume": "volume", "crossfader": "crossfader" }
@@ -786,9 +789,9 @@ class LiveOSC:
     # Track name changestate
     def trname_changestate(self, tid, track, r = 0):
         if r == 1:
-            self.oscEndpoint.send('/name/return', (tid, str(track.name)))
+            self.oscEndpoint.send('/return/name', (tid, str(track.name)))
         else:
-            self.oscEndpoint.send('/name/track', (tid, str(track.name)))
+            self.oscEndpoint.send('/track/name', (tid, str(track.name)))
             self.trBlock(0, len(LiveUtils.getTracks()))
             
     # Meter Changestate
@@ -822,8 +825,9 @@ class LiveOSC:
                 return 0
         else:
             return 0
-    
+    """
     # Device Listeners
+    """
     def add_device_listeners(self):
         self.rem_device_listeners()
     
@@ -915,3 +919,5 @@ class LiveOSC:
         for i in xrange(0,len(tuple)):
             if (tuple[i] == obj):
                 return i 
+
+    """
