@@ -228,6 +228,7 @@ class LiveOSC:
         self.rem_tracks_listener()
         #self.rem_device_listeners()
         self.rem_transport_listener()
+        self.rem_metronome_listener()
         
         self.song().remove_tracks_listener(self.refresh_state)
         
@@ -246,6 +247,8 @@ class LiveOSC:
         self.add_tracks_listener()
         #self.add_device_listeners()
         self.add_transport_listener()
+        self.add_metronome_listener()
+
 
         """
         trackNumber = 0
@@ -324,6 +327,20 @@ class LiveOSC:
     def tempo_change(self):
         tempo = LiveUtils.getTempo()
         self.oscEndpoint.send("/global/tempo", (tempo))
+
+
+    def add_metronome_listener(self):
+        self.rem_metronome_listener()
+
+        if self.song().metronome_has_listener(self.metro_change) != 1:
+            self.song().add_metronome_listener(self.metro_change)
+
+    def rem_metronome_listener(self):
+        if self.song().metronome_has_listener(self.metro_change) == 1:
+            self.song().remove_metronome_listener(self.metro_change)
+    
+    def metro_change(self):
+        self.oscEndpoint.send("/global/metronome", (self.song().metronome))
 	
     def add_transport_listener(self):
         if self.song().is_playing_has_listener(self.transport_change) != 1:
