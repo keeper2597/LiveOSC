@@ -38,6 +38,8 @@ from Logger import log
 
 debug = LiveUtils.debug
 
+LIVE_CONTROL_TRACK = 0
+
 class LiveOSC:
     __module__ = __name__
     __doc__ = "Main class that establishes the LiveOSC Component"
@@ -48,8 +50,8 @@ class LiveOSC:
     clisten = {}
     slisten = {}
     pplisten = {}
-    cnlisten = {}
-    cclisten = {}
+    #cnlisten = {}
+    #cclisten = {}
     
     mlisten = { "solo": {}, "mute": {}, "arm": {}, "panning": {}, "volume": {}, "sends": {}, "name": {}, "oml": {}, "omr": {} }
     rlisten = { "solo": {}, "mute": {}, "panning": {}, "volume": {}, "sends": {}, "name": {} }
@@ -80,10 +82,23 @@ class LiveOSC:
         # for x in Live.Application.get_application().view.available_main_views():
         #     log(x)
          
-        #Visible tracks listener - do not remove without modifying refresh_state
+        """
+        #Tracks listener - refresh_state() will be called whenever the song.tracks changes
         if self.song().tracks_has_listener(self.refresh_state) != 1:
            self.song().add_tracks_listener(self.refresh_state)
-        
+
+        # Scenes listener - as tracks listener but for song.scenes
+        if self.song().scenes_has_listener(self.refresh_state) != 1:
+            self.song().add_scenes_listener(self.refresh_state)
+        """
+
+        # Put a listener on our control track (slots)
+        controlTrack = LiveUtils.getTrack(LIVE_CONTROL_TRACK)
+        if controlTrack.clip_slots_has_listener(self.refresh_state) != 1:
+            controlTrack.add_clip_slots_listener(self.refresh_state)
+
+        if controlTrack.playing_slot_index_has_listener(self.send_playing_scene_id) != 1:
+            controlTrack.add_playing_slot_index_listener(self.send_playing_scene_id)
 ######################################################################
 # Standard Ableton Methods
 
@@ -155,6 +170,16 @@ class LiveOSC:
             
         # END OSC LISTENER SETUP
         ######################################################
+
+    def send_playing_scene_id(self):
+        index = LiveUtils.getTrack(LIVE_CONTROL_TRACK).playing_slot_index
+        if index != -1:
+            scene = LiveUtils.getScene(index)
+            idIndex = scene.name.find(LiveOSCCallbacks.sceneIdentifier)
+            if idIndex != -1:
+                sceneID = scene.name[idIndex:]
+                log(sceneID)
+                self.oscEndpoint.send("/scene/playing", (index, str(sceneID)))
 
     def current_song_time_changed(self):
         time = self.song().current_song_time
@@ -402,6 +427,7 @@ class LiveOSC:
                 
         self.pplisten = {}
 
+        """
         for clip in self.cnlisten:
             if clip != None:
                 if clip.name_has_listener(self.cnlisten[clip]) == 1:
@@ -415,10 +441,21 @@ class LiveOSC:
                     clip.remove_color_listener(self.cclisten[clip])
                 
         self.cclisten = {}
+
+        """
         
     def add_clip_listeners(self):
         self.rem_clip_listeners()
+
+        track = LiveUtils.getTrack(LIVE_CONTROL_TRACK)
+        slot_index = 0
+        for slot in track.clip_slots:
+            if slot.has_clip:
+                self.add_cliplistener(slot.clip, LIVE_CONTROL_TRACK, slot_index)
+                log("Added clip listener track: " + str(LIVE_CONTROL_TRACK) + " clip: " + str(slot_index));
+            slot_index += 1
     
+        """
         tracks = self.getslots()
         for track in range(len(tracks)):
             for clip in range(len(tracks[track])):
@@ -428,6 +465,7 @@ class LiveOSC:
                     log("ClipLauncher: added clip listener tr: " + str(track) + " clip: " + str(clip));
                 
                 self.add_slotlistener(c, track, clip)
+        """
         
     def add_cliplistener(self, clip, tid, cid):
         cb = lambda :self.clip_changestate(clip, tid, cid)
@@ -441,6 +479,7 @@ class LiveOSC:
             clip.add_playing_position_listener(cb2)
             self.pplisten[clip] = cb2
             
+        """
         cb3 = lambda :self.clip_name(clip, tid, cid)
         if self.cnlisten.has_key(clip) != 1:
             clip.add_name_listener(cb3)
@@ -449,6 +488,7 @@ class LiveOSC:
         if self.cclisten.has_key(clip) != 1:
             clip.add_color_listener(cb3)
             self.cclisten[clip] = cb3
+        """
         
     def add_slotlistener(self, slot, tid, cid):
         cb = lambda :self.slot_changestate(slot, tid, cid)
@@ -749,11 +789,13 @@ class LiveOSC:
             if self.pplisten.has_key(slot.clip) == 1:
                 slot.clip.remove_playing_position_listener(self.pplisten[slot.clip])
 
+                """
             if self.cnlisten.has_key(slot.clip) == 1:
                 slot.clip.remove_name_listener(self.cnlisten[slot.clip])
 
             if self.cclisten.has_key(slot.clip) == 1:
                 slot.clip.remove_color_listener(self.cclisten[slot.clip])
+                """
             
             self.oscEndpoint.send('/track/info', (tid, armed, cid, 0, 0.0))
             self.oscEndpoint.send('/clip/info', (tid, cid, 0))

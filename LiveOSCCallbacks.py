@@ -37,6 +37,10 @@ from Logger import log
 
 debug = LiveUtils.debug
 
+sceneIdentifier = " #cS"
+trackIdentifier = " #cT"
+clipIdentifier = " #cC"
+
 
 """
     This class sets the address to call for much of the LiveAPI interactions.
@@ -51,10 +55,7 @@ class LiveOSCCallbacks:
 
         self.c_instance = c_instance
 
-        self.sceneIdentifier = " #cS"
-        self.trackIdentifier = " #cT"
-        self.clipIdentifier = " #cC"
-        self.clipSlotIdentifier = " #cL"
+        
 
         ###################################################################################################################
         #######################################      GLOBAL                  ##############################################
@@ -435,9 +436,9 @@ class LiveOSCCallbacks:
         trackNumber = 0
         for track in LiveUtils.getTracks():
 
-            if (track.name.find(self.trackIdentifier) == -1):
+            if (track.name.find(trackIdentifier) == -1):
                 if trackNumber != 0:
-                    scanID = self.trackIdentifier + self.makeID()
+                    scanID = trackIdentifier + self.makeID()
                     track.name = track.name + scanID
 
             trackType = 'MIDI' if track.has_midi_input else 'Audio'
@@ -453,10 +454,11 @@ class LiveOSCCallbacks:
         sceneIDs = []
         for scene in LiveUtils.getScenes():
 
-            idIndex = scene.name.find(self.sceneIdentifier)
+            idIndex = scene.name.find(sceneIdentifier)
             if idIndex == -1:
-                scanID = self.sceneIdentifier + self.makeID()
-                scene.name = scene.name + scanID
+                sceneID = sceneIdentifier + self.makeID()
+                sceneName = scene.name
+                scene.name = scene.name + sceneID
             else:
                 sceneID = scene.name[idIndex:]
                 try:
@@ -464,14 +466,16 @@ class LiveOSCCallbacks:
                 except ValueError: 
                     usedAlready = -1
                 if usedAlready != -1:
-                    newID = self.sceneIdentifier + self.makeID()
-                    scene.name = scene.name[:idIndex] + newID
+                    newID = sceneIdentifier + self.makeID()
+                    sceneName = scene.name[:idIndex]
+                    scene.name = sceneName + newID
                 else:
                     sceneIDs.append(sceneID)
 
 
 
-            sceneBundle.append(OSC.OSCMessage("/scan/scenes", (sceneNumber, str(scene.name), scene.tempo)))
+            #sceneBundle.append(OSC.OSCMessage("/scan/scenes", (sceneNumber, str(scene.name), scene.tempo)))
+            self.oscEndpoint.send("/scan/scenes", (sceneNumber, str(sceneName), sceneID, scene.tempo))
 
             # check for clips
             """
@@ -480,14 +484,14 @@ class LiveOSCCallbacks:
             slotNumber = 0
             for slot in scene.clip_slots:
                 clip = slot.clip
-                scanID = self.clipIdentifier + self.makeID()
+                scanID = clipIdentifier + self.makeID()
                 if clip is None:
                     if slotNumber == 0:
                         slot.create_clip(32.0)
                         slot.clip.name = "<!LC>" + scanID
                 clip = slot.clip
                 if clip is not None:
-                    if (clip.name.find(self.clipIdentifier) == -1):
+                    if (clip.name.find(clipIdentifier) == -1):
                         clip.name = clip.name + scanID
                     
                     warping = True if clip.is_midi_clip else clip.warping
@@ -503,7 +507,7 @@ class LiveOSCCallbacks:
 
         #fullBundle.append(sceneBundle)
         
-        self.oscEndpoint.sendMessage(sceneBundle)
+        #self.oscEndpoint.sendMessage(sceneBundle)
         return
     
 
