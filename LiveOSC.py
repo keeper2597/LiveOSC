@@ -39,6 +39,12 @@ from Logger import log
 debug = LiveUtils.debug
 
 LIVE_CONTROL_TRACK = 0
+SCENE_IDENTIFIER = " #cS"
+TRACK_IDENTIFIER = " #cT"
+CLIP_IDENTIFIER = " #cC"
+CONTROL_TRACK_IDENTIFIER = "<!LCONTROL>"
+CONTROL_CLIP_IDENTIFIER = "<!LC>"
+
 
 class LiveOSC:
     __module__ = __name__
