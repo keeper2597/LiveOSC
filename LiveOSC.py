@@ -255,7 +255,7 @@ class LiveOSC:
         self.rem_transport_listener()
         self.rem_metronome_listener()
         
-        self.song().remove_tracks_listener(self.refresh_state)
+        #self.song().remove_tracks_listener(self.refresh_state)
         
         self.oscEndpoint.send('/server/shutdown', 1)
         self.oscEndpoint.shutdown()
@@ -365,7 +365,8 @@ class LiveOSC:
             self.song().remove_metronome_listener(self.metro_change)
     
     def metro_change(self):
-        self.oscEndpoint.send("/global/metronome", (self.song().metronome))
+        log(str(self.song().metronome))
+        self.oscEndpoint.send("/global/metronome", (str(self.song().metronome)))
 	
     def add_transport_listener(self):
         if self.song().is_playing_has_listener(self.transport_change) != 1:
