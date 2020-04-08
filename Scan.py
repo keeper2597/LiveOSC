@@ -40,27 +40,34 @@ class Scan:
         return
 
     def addControlTrack(self):
-    	#check for LiveControl listener track
+        #check for LiveControl listener track
         firstTrack = LiveUtils.getTrack(0)
         if firstTrack.name != CONTROL_TRACK_IDENTIFIER:
             LiveUtils.getSong().create_midi_track(0)
             controlTrack = LiveUtils.getTrack(0)
             controlTrack.name = CONTROL_TRACK_IDENTIFIER
             controlTrack.mute = 1
-
-     
+   
     def addControlClips(self):
-		controlTrack = LiveUtils.getTrack(0)
-		slotNumber = 0
-		for slot in controlTrack.clip_slots:
-				if not slot.has_clip:
-					if slotNumber in self.sceneScanLengths.keys():
-						length = self.sceneScanLengths[slotNumber]
-					else:
-						length = 4.0
-					slot.create_clip(length)
-					slot.clip.name = CONTROL_CLIP_IDENTIFIER
-					slotNumber = slotNumber + 1
+        controlTrack = LiveUtils.getTrack(0)
+        slotNumber = 0
+        for slot in controlTrack.clip_slots:
+            if not slot.has_clip:
+                signature_denominator = LiveUtils.getSong().signature_denominator
+                signature_numerator = LiveUtils.getSong().signature_numerator
+                if slotNumber in self.sceneScanLengths.keys():
+                    info = self.sceneScanLengths[slotNumber]
+                    length = info['length']
+                    signature_numerator = int(info['signature_numerator'])
+                    signature_denominator = int(info['signature_denominator'])
+                else:
+                    length = 4.0
+                slot.create_clip(length)
+                slot.clip.signature_numerator = signature_numerator
+                slot.clip.signature_denominator = signature_denominator
+                slot.length = length
+                slot.clip.name = CONTROL_CLIP_IDENTIFIER
+            slotNumber = slotNumber + 1
 
     """
     def scanTracks(self, msg, source):
@@ -83,14 +90,12 @@ class Scan:
         self.oscEndpoint.sendMessage(trackBundle)
         return  
 	"""
-
     def scanTracks(self, msg, source):
         #/scan/tracks                  Returns a a series of all the track names in the form /track/name (int track, string name)
         trackNumber = 0
         bundle = OSC.OSCBundle()
         bundle.append(OSC.OSCMessage("scan/tracks/start"))
         for track in LiveUtils.getTracks():
-
       	    trackType = 'MIDI' if track.has_midi_input else 'Audio'
             bundle.append(OSC.OSCMessage("/scan/tracks", (trackNumber, str(track.name), str(trackType))))
             trackNumber = trackNumber + 1
@@ -100,17 +105,21 @@ class Scan:
         return
 
     def findLongestClip(self, sceneIndex):
-    	longestLength = 0.0
-    	scene = LiveUtils.getScene(int(sceneIndex))
-    	for slot in scene.clip_slots:
-    		if slot.clip != None:
-    			longestLength = slot.clip.length if slot.clip.length > longestLength else longestLength
-    	if longestLength  == 0.0:
-    		longestLength = 4.0
-    	
-    	return longestLength
-
-
+        longestLength = 0.0
+        signature_denominator = LiveUtils.getSong().signature_denominator
+        signature_numerator = LiveUtils.getSong().signature_numerator
+        scene = LiveUtils.getScene(int(sceneIndex))
+        for slot in scene.clip_slots:
+            if slot.clip != None:
+                longestLength = slot.clip.length if slot.clip.length > longestLength else longestLength
+                if slot.clip.length > longestLength:
+                    longestLength = slot.clip.length
+                    signature_numerator = slot.clip.signature_numerator
+                    signature_denominator = slot.clip.signature_denominator
+        if longestLength == 0.0:
+            longestLength = 4.0
+        
+        return (longestLength, signature_numerator, signature_denominator)
 
     def scanScenes(self):
         #cycle through the scenes for IDs
@@ -139,29 +148,33 @@ class Scan:
                 else:
                     sceneIDs.append(sceneID)
 
-
-            length = self.findLongestClip(sceneNumber)
-            self.sceneScanLengths[sceneNumber] = length
-            sceneBundle.append(OSC.OSCMessage("/scan/scenes", (sceneNumber, str(scene.name), scene.tempo, length)))
+            length, signature_numerator, signature_denominator = self.findLongestClip(sceneNumber)
+            sceneSignature = re.findall("\d+\/\d+", scene.name)
+            if (sceneSignature):
+                separator = sceneSignature[0].find('/')
+                signature_numerator = int(sceneSignature[0][:separator])
+                separator += 1
+                signature_denominator = int(sceneSignature[0][separator:])
+                log(signature_denominator)
+            self.sceneScanLengths[sceneNumber] = {'length':length, 'signature_numerator': signature_numerator, 'signature_denominator': signature_denominator}
+            sceneBundle.append(OSC.OSCMessage("/scan/scenes", (sceneNumber, str(scene.name), scene.tempo, length, signature_numerator, signature_denominator)))
             #self.oscEndpoint.send("/scan/scenes", (sceneNumber, str(sceneName), sceneID, scene.tempo))
 
-            
             if sceneNumber > 30:
                 sceneNumber = 0
                 self.oscEndpoint.sendMessage(sceneBundle)
                 sceneBundle = OSC.OSCBundle()
             else:
-                sceneNumber = sceneNumber + 1
+                sceneNumber += 1
 
         #fullBundle.append(sceneBundle)
         sceneBundle.append(OSC.OSCMessage("/scan/scenes/end"))
         self.oscEndpoint.sendMessage(sceneBundle)
         return
 
-
     def scanSceneClips(self, msg, source):
-    	
-    	scene = LiveUtils.getScene(int(msg[2]))
+        
+        scene = LiveUtils.getScene(int(msg[2]))
 
         clipBundle = OSC.OSCBundle()
         clipBundle.append(OSC.OSCMessage("/scan/clips/start"))
@@ -170,7 +183,7 @@ class Scan:
             clip = slot.clip
             scanID = CLIP_IDENTIFIER + self.makeID()
             if clip is None:
-            	# if there's no control clip in this slot let's add one
+                # if there's no control clip in this slot let's add one
                 if slotNumber == 0:
                     slot.create_clip(32.0)
                     slot.clip.name = "<!LC>" + scanID
