@@ -22,13 +22,6 @@ CONTROL_TRACK_IDENTIFIER = "<!LCONTROL>"
 CONTROL_CLIP_IDENTIFIER = "<!LC>"
 
 
-
-"""
-    This class sets the address to call for much of the LiveAPI interactions.
-    The callbackManager.add() puts them in a dictionary in the CallbackManager class in the OSC.py document
-    The CallbackManager class adds a prefix for each address so one should not be added here
-"""
-
 class Scan:
     def __init__(self, oscEndpoint):
         self.oscEndpoint = oscEndpoint
@@ -39,28 +32,13 @@ class Scan:
 
     def scanSession(self, msg, source):
         #/scan/scenes                            Returns a a series of all the scene names in the form /scene/name (int scene, string name)
-        log("scanCB called")
+        log("scanSession called")
+        self.addControlTrack(msg, source)
+        self.scanScenes(msg, source)
+        return
 
-        #log(dir(Live.Application.get_application().get_document()))
-
-        # proof of concept to duplicate scenes and move them into separate scenes
-        """i = 0
-        while i < 10:
-            sceneToGet = i + 4
-            scene = LiveUtils.getSong().duplicate_scene(sceneToGet)
-            newScene = LiveUtils.getScene(sceneToGet + 1)
-            for slot in newScene.clip_slots:
-                #log(slot.has_clip)
-                if slot.has_clip:
-                    newStart = slot.clip.start_marker + 2.0
-                    if newStart >= slot.clip.end_marker:
-                        newStart = slot.clip.end_marker - 2.0
-                    slot.clip.start_marker = newStart
-            i += 1
-        """
-        
-
-        #check for LiveControl listener track
+    def addControlTrack(self, msg, source):
+    	#check for LiveControl listener track
         firstTrack = LiveUtils.getTrack(0)
         if firstTrack.name != CONTROL_TRACK_IDENTIFIER:
             LiveUtils.getSong().create_midi_track(0)
@@ -72,6 +50,9 @@ class Scan:
                     slot.create_clip(32.0)
                     slot.clip.name = CONTROL_CLIP_IDENTIFIER
 
+    """
+    def scanTracks(self, msg, source):
+        
         #cycle through the tracks for IDs
         trackBundle = OSC.OSCBundle()
         trackNumber = 0
@@ -88,8 +69,24 @@ class Scan:
             trackNumber = trackNumber + 1
         trackBundle.append(OSC.OSCMessage("/scan/tracks/end"))
         self.oscEndpoint.sendMessage(trackBundle)
-        #fullBundle.append(trackBundle)
+        return  
+	"""
 
+    def scanTracks(self, msg, source):
+        #/scan/tracks                  Returns a a series of all the track names in the form /track/name (int track, string name)
+        trackNumber = 0
+        bundle = OSC.OSCBundle()
+        bundle.append(OSC.OSCMessage("scan/tracks/start"))
+        for track in LiveUtils.getTracks():
+        	trackType = 'MIDI' if track.has_midi_input else 'Audio'
+            bundle.append("/scan/layout", (trackNumber, str(track.name), str(trackType)))
+            trackNumber = trackNumber + 1
+        bundle.append(OSC.OSCMessage("scan/tracks/end"))
+        self.oscEndpoint.sendMessage(bundle)
+        return  
+
+
+    def scanScenes(self, msg, source):
         #cycle through the scenes for IDs
         sceneBundle = OSC.OSCBundle()
         sceneNumber = 0
@@ -120,32 +117,7 @@ class Scan:
             sceneBundle.append(OSC.OSCMessage("/scan/scenes", (sceneNumber, str(scene.name), scene.tempo)))
             #self.oscEndpoint.send("/scan/scenes", (sceneNumber, str(sceneName), sceneID, scene.tempo))
 
-            # check for clips
-            """
-            clipBundle = OSC.OSCBundle()
-            foundClip = False
-            slotNumber = 0
-            for slot in scene.clip_slots:
-                clip = slot.clip
-                scanID = clipIdentifier + self.makeID()
-                if clip is None:
-                    if slotNumber == 0:
-                        slot.create_clip(32.0)
-                        slot.clip.name = "<!LC>" + scanID
-                clip = slot.clip
-                if clip is not None:
-                    if (clip.name.find(clipIdentifier) == -1):
-                        clip.name = clip.name + scanID
-                    
-                    warping = True if clip.is_midi_clip else clip.warping
-                    arguments = (slotNumber, str(clip.name), int(clip.length), str(warping), str(clip.looping), int(clip.loop_start), int(clip.loop_end), int(clip.signature_numerator), int(clip.signature_denominator))
-                    clipBundle.append(OSC.OSCMessage("/scan/clips", arguments))
-                    foundClip = True
-
-                slotNumber = slotNumber + 1
-            if foundClip:
-                sceneBundle.append(clipBundle)
-            """
+            
             if sceneNumber > 30:
                 sceneNumber = 0
                 self.oscEndpoint.sendMessage(sceneBundle)
@@ -159,29 +131,51 @@ class Scan:
         return
 
 
+    def scanSceneClips(self, msg, source):
+    	
+    	scene = LiveUtils.getScene(int(msg[2]))
 
-    def scanTracks(self, msg, source):
-        #/scan/tracks                  Returns a a series of all the track names in the form /track/name (int track, string name)
-        #Requesting all track names
-        trackNumber = 0
-        bundle = OSC.OSCBundle()
-        for track in LiveUtils.getTracks():
-            bundle.append("/scan/tracks", (trackNumber, str(track.name)))
-            trackNumber = trackNumber + 1
-        self.oscEndpoint.sendMessage(bundle)
-        return  
+        clipBundle = OSC.OSCBundle()
+        clipBundle.append(OSC.OSCMessage("/scan/clips/start"))
+        slotNumber = 0
+        for slot in scene.clip_slots:
+            clip = slot.clip
+            scanID = CLIP_IDENTIFIER + self.makeID()
+            if clip is None:
+            	# if there's no control clip in this slot let's add one
+                if slotNumber == 0:
+                    slot.create_clip(32.0)
+                    slot.clip.name = "<!LC>" + scanID
+            clip = slot.clip
+            if clip is not None:
+                if (clip.name.find(CLIP_IDENTIFIER) == -1):
+                    clip.name = clip.name + scanID
+                
+                warping = True if clip.is_midi_clip else clip.warping
+                arguments = (slotNumber, str(clip.name), int(clip.length), str(warping), str(clip.looping), int(clip.loop_start), int(clip.loop_end), int(clip.signature_numerator), int(clip.signature_denominator))
+                clipBundle.append(OSC.OSCMessage("/scan/clips", arguments))
+                foundClip = True
+
+            slotNumber = slotNumber + 1
+        clipBundle.append(OSC.OSCMessage("/scan/clips/end"))
+        self.oscEndpoint.send(clipBundle)
+        return
 
 
-    def scanScenes(self, msg, source):
-        #/scan/scenes                            Returns a a series of all the scene names in the form /scene/name (int scene, string name)
-        bundle = OSC.OSCBundle()
-        sceneNumber = 0
-        for scene in LiveUtils.getScenes():
-            bundle.append("/scan/scenes", (sceneNumber, str(scene.name)))
-            sceneNumber = sceneNumber + 1
-        self.oscEndpoint.sendMessage(bundle)
-        return  
-
-
+ # proof of concept to duplicate scenes and move them into separate scenes
+        """i = 0
+        while i < 10:
+            sceneToGet = i + 4
+            scene = LiveUtils.getSong().duplicate_scene(sceneToGet)
+            newScene = LiveUtils.getScene(sceneToGet + 1)
+            for slot in newScene.clip_slots:
+                #log(slot.has_clip)
+                if slot.has_clip:
+                    newStart = slot.clip.start_marker + 2.0
+                    if newStart >= slot.clip.end_marker:
+                        newStart = slot.clip.end_marker - 2.0
+                    slot.clip.start_marker = newStart
+            i += 1
+        """
 
 
