@@ -25,6 +25,7 @@ CONTROL_CLIP_IDENTIFIER = "<!LC>"
 class Scan:
     def __init__(self, oscEndpoint):
         self.oscEndpoint = oscEndpoint
+        self.sceneScanLengths = {}
 
     def makeID(self, stringLength=4):
         lettersAndDigits = string.ascii_letters + string.digits
@@ -33,11 +34,12 @@ class Scan:
     def scanSession(self, msg, source):
         #/scan/scenes                            Returns a a series of all the scene names in the form /scene/name (int scene, string name)
         log("scanSession called")
-        self.addControlTrack(msg, source)
-        self.scanScenes(msg, source)
+        self.addControlTrack()
+        self.scanScenes()
+        self.addControlClips()
         return
 
-    def addControlTrack(self, msg, source):
+    def addControlTrack(self):
     	#check for LiveControl listener track
         firstTrack = LiveUtils.getTrack(0)
         if firstTrack.name != CONTROL_TRACK_IDENTIFIER:
@@ -45,10 +47,20 @@ class Scan:
             controlTrack = LiveUtils.getTrack(0)
             controlTrack.name = CONTROL_TRACK_IDENTIFIER
             controlTrack.mute = 1
-            for slot in controlTrack.clip_slots:
-                if not slot.has_clip:
-                    slot.create_clip(32.0)
-                    slot.clip.name = CONTROL_CLIP_IDENTIFIER
+
+     
+    def addControlClips(self):
+		controlTrack = LiveUtils.getTrack(0)
+		slotNumber = 0
+		for slot in controlTrack.clip_slots:
+				if not slot.has_clip:
+					if slotNumber in self.sceneScanLengths.keys():
+						length = self.sceneScanLengths[slotNumber]
+					else:
+						length = 4.0
+					slot.create_clip(length)
+					slot.clip.name = CONTROL_CLIP_IDENTIFIER
+					slotNumber = slotNumber + 1
 
     """
     def scanTracks(self, msg, source):
@@ -78,18 +90,33 @@ class Scan:
         bundle = OSC.OSCBundle()
         bundle.append(OSC.OSCMessage("scan/tracks/start"))
         for track in LiveUtils.getTracks():
-        	trackType = 'MIDI' if track.has_midi_input else 'Audio'
-            bundle.append("/scan/layout", (trackNumber, str(track.name), str(trackType)))
+
+      	    trackType = 'MIDI' if track.has_midi_input else 'Audio'
+            bundle.append(OSC.OSCMessage("/scan/tracks", (trackNumber, str(track.name), str(trackType))))
             trackNumber = trackNumber + 1
+
         bundle.append(OSC.OSCMessage("scan/tracks/end"))
         self.oscEndpoint.sendMessage(bundle)
-        return  
+        return
+
+    def findLongestClip(self, sceneIndex):
+    	longestLength = 0.0
+    	scene = LiveUtils.getScene(int(sceneIndex))
+    	for slot in scene.clip_slots:
+    		if slot.clip != None:
+    			longestLength = slot.clip.length if slot.clip.length > longestLength else longestLength
+    	if longestLength  == 0.0:
+    		longestLength = 4.0
+    	
+    	return longestLength
 
 
-    def scanScenes(self, msg, source):
+
+    def scanScenes(self):
         #cycle through the scenes for IDs
         sceneBundle = OSC.OSCBundle()
         sceneNumber = 0
+        self.sceneScanLengths = {}
         sceneIDs = []
         sceneBundle.append(OSC.OSCMessage("/scan/scenes/start"))
         for scene in LiveUtils.getScenes():
@@ -113,8 +140,9 @@ class Scan:
                     sceneIDs.append(sceneID)
 
 
-
-            sceneBundle.append(OSC.OSCMessage("/scan/scenes", (sceneNumber, str(scene.name), scene.tempo)))
+            length = self.findLongestClip(sceneNumber)
+            self.sceneScanLengths[sceneNumber] = length
+            sceneBundle.append(OSC.OSCMessage("/scan/scenes", (sceneNumber, str(scene.name), scene.tempo, length)))
             #self.oscEndpoint.send("/scan/scenes", (sceneNumber, str(sceneName), sceneID, scene.tempo))
 
             

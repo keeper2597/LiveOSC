@@ -73,7 +73,6 @@ class LiveOSCCallbacks:
 
 
         self.callbackManager.add("/scan/tracks", self.scan.scanTracks)
-        #self.callbackManager.add("/scan/layout", self.scan.scanLayout)
         self.callbackManager.add("/scan/scenes", self.scan.scanScenes)
         self.callbackManager.add("/scan", self.scan.scanSession)
 
