@@ -94,13 +94,13 @@ class Scan:
         #/scan/tracks                  Returns a a series of all the track names in the form /track/name (int track, string name)
         trackNumber = 0
         bundle = OSC.OSCBundle()
-        bundle.append(OSC.OSCMessage("scan/tracks/start"))
+        bundle.append(OSC.OSCMessage("/scan/tracks/start"))
         for track in LiveUtils.getTracks():
       	    trackType = 'MIDI' if track.has_midi_input else 'Audio'
             bundle.append(OSC.OSCMessage("/scan/tracks", (trackNumber, str(track.name), str(trackType))))
             trackNumber = trackNumber + 1
 
-        bundle.append(OSC.OSCMessage("scan/tracks/end"))
+        bundle.append(OSC.OSCMessage("/scan/tracks/end"))
         self.oscEndpoint.sendMessage(bundle)
         return
 
