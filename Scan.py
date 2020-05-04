@@ -27,15 +27,18 @@ class Scan:
         self.oscEndpoint = oscEndpoint
         self.sceneScanLengths = {}
 
-    def makeID(self, stringLength=4):
+    def makeID(self, stringLength=8):
         lettersAndDigits = string.ascii_letters + string.digits
         return ''.join(random.choice(lettersAndDigits) for i in range(stringLength))
 
     def scanSession(self, msg, source):
-        #/scan/scenes                            Returns a a series of all the scene names in the form /scene/name (int scene, string name)
+        #/scenes                            Returns a a series of all the scene names in the form /scene/name (int scene, string name)
         log("scanSession called")
+        log(msg)
+        songID = msg[2]
         self.addControlTrack()
-        self.scanScenes()
+        self.scanSongTracks(songID)
+        self.scanScenes(songID)
         self.addControlClips()
         return
 
@@ -75,7 +78,7 @@ class Scan:
         #cycle through the tracks for IDs
         trackBundle = OSC.OSCBundle()
         trackNumber = 0
-        trackBundle.append(OSC.OSCMessage("/scan/tracks/start"))
+        trackBundle.append(OSC.OSCMessage("/tracks/start"))
         for track in LiveUtils.getTracks():
 
             if (track.name.find(TRACK_IDENTIFIER) == -1):
@@ -84,23 +87,38 @@ class Scan:
                     track.name = track.name + scanID
 
             trackType = 'MIDI' if track.has_midi_input else 'Audio'
-            trackBundle.append(OSC.OSCMessage("/scan/tracks", (trackNumber, str(track.name), str(trackType))))
+            trackBundle.append(OSC.OSCMessage("/tracks", (trackNumber, str(track.name), str(trackType))))
             trackNumber = trackNumber + 1
-        trackBundle.append(OSC.OSCMessage("/scan/tracks/end"))
+        trackBundle.append(OSC.OSCMessage("/tracks/end"))
         self.oscEndpoint.sendMessage(trackBundle)
         return  
 	"""
     def scanTracks(self, msg, source):
-        #/scan/tracks                  Returns a a series of all the track names in the form /track/name (int track, string name)
+        #/tracks                  Returns a a series of all the track names in the form /track/name (int track, string name)
         trackNumber = 0
         bundle = OSC.OSCBundle()
-        bundle.append(OSC.OSCMessage("/scan/tracks/start"))
+        layoutID = self.makeID()
+        bundle.append(OSC.OSCMessage("/layout/" + layoutID + "/start"))
         for track in LiveUtils.getTracks():
       	    trackType = 'MIDI' if track.has_midi_input else 'Audio'
-            bundle.append(OSC.OSCMessage("/scan/tracks", (trackNumber, str(track.name), str(trackType))))
+            bundle.append(OSC.OSCMessage("/track/" + layoutID, (trackNumber, str(track.name), str(trackType))))
             trackNumber = trackNumber + 1
 
-        bundle.append(OSC.OSCMessage("/scan/tracks/end"))
+        bundle.append(OSC.OSCMessage("/layout/" + layoutID + "/end"))
+        self.oscEndpoint.sendMessage(bundle)
+        return
+
+    def scanSongTracks(self, songID):
+        
+        trackNumber = 0
+        bundle = OSC.OSCBundle()
+        bundle.append(OSC.OSCMessage("/song/" + songID + "/layout/start"))
+        for track in LiveUtils.getTracks():
+            trackType = 'MIDI' if track.has_midi_input else 'Audio'
+            bundle.append(OSC.OSCMessage("/song/" + songID + "/track/", (trackNumber, str(track.name), str(trackType))))
+            trackNumber = trackNumber + 1
+
+        bundle.append(OSC.OSCMessage("/song/" + songID + "/layout/end"))
         self.oscEndpoint.sendMessage(bundle)
         return
 
@@ -121,33 +139,42 @@ class Scan:
         
         return (longestLength, signature_numerator, signature_denominator)
 
-    def scanScenes(self):
+    def scanScenes(self, songID):
         #cycle through the scenes for IDs
-        sceneBundle = OSC.OSCBundle()
+        
         sceneNumber = 0
         self.sceneScanLengths = {}
         sceneIDs = []
-        sceneBundle.append(OSC.OSCMessage("/scan/scenes/start"))
+        #songID = makeID()
+        self.oscEndpoint.sendMessage(OSC.OSCMessage("/song/" + songID + "/start/"))
+        tempo = LiveUtils.getTempo()
+        self.oscEndpoint.sendMessage(OSC.OSCMessage("/song/" + songID + "/tempo/", float(tempo)))
+        numerator = LiveUtils.getNumerator()
+        self.oscEndpoint.sendMessage(OSC.OSCMessage("/song/" + songID + "/numerator/", int(numerator)))
+        denominator = LiveUtils.getDenominator()
+        self.oscEndpoint.sendMessage(OSC.OSCMessage("/song/" + songID + "/denominator/", int(denominator)))
+        #sceneBundle.append(OSC.OSCMessage("/scenes/start"))
         for scene in LiveUtils.getScenes():
-
-            idIndex = scene.name.find(SCENE_IDENTIFIER)
-            if idIndex == -1:
+            sceneArgs = {}
+            sceneBundle = OSC.OSCBundle()
+            sceneID = re.findall("(\#cS.{8})", scene.name)
+            if (not sceneID):
                 sceneID = SCENE_IDENTIFIER + self.makeID()
                 sceneName = scene.name
                 scene.name = scene.name + sceneID
             else:
-                sceneID = scene.name[idIndex:]
+                #sceneID = scene.name[idIndex:]
                 try:
                     usedAlready = sceneIDs.index(sceneID)
                 except ValueError: 
                     usedAlready = -1
                 if usedAlready != -1:
-                    newID = SCENE_IDENTIFIER + self.makeID()
-                    sceneName = scene.name[:idIndex]
+                    sceneID = SCENE_IDENTIFIER + self.makeID()
+                    sceneName = scene.name[:usedAlready]
                     scene.name = sceneName + newID
-                else:
-                    sceneIDs.append(sceneID)
-
+                    
+            self.oscEndpoint.sendMessage(OSC.OSCMessage("/song/" + songID + "/scene/" + sceneID + "/start/"))
+            sceneIDs.append(sceneID)
             length, signature_numerator, signature_denominator = self.findLongestClip(sceneNumber)
             sceneSignature = re.findall("\d+\/\d+", scene.name)
             if (sceneSignature):
@@ -155,31 +182,29 @@ class Scan:
                 signature_numerator = int(sceneSignature[0][:separator])
                 separator += 1
                 signature_denominator = int(sceneSignature[0][separator:])
-                log(signature_denominator)
+                #log(signature_denominator)
             self.sceneScanLengths[sceneNumber] = {'length':length, 'signature_numerator': signature_numerator, 'signature_denominator': signature_denominator}
-            sceneBundle.append(OSC.OSCMessage("/scan/scenes", (sceneNumber, str(scene.name), scene.tempo, length, signature_numerator, signature_denominator)))
-            #self.oscEndpoint.send("/scan/scenes", (sceneNumber, str(sceneName), sceneID, scene.tempo))
+            sceneBundle.append(OSC.OSCMessage("/song/" + songID + "/scene/" + sceneID + "/abletonIndex/", int(sceneNumber)))
+            sceneBundle.append(OSC.OSCMessage("/song/" + songID + "/scene/" + sceneID + "/name/", str(scene.name)))
+            sceneBundle.append(OSC.OSCMessage("/song/" + songID + "/scene/" + sceneID + "/tempo/", float(scene.tempo)))
+            sceneBundle.append(OSC.OSCMessage("/song/" + songID + "/scene/" + sceneID + "/length/", float(length)))
+            sceneBundle.append(OSC.OSCMessage("/song/" + songID + "/scene/" + sceneID + "/numerator/", int(signature_numerator)))
+            sceneBundle.append(OSC.OSCMessage("/song/" + songID + "/scene/" + sceneID + "/denominator/", int(signature_denominator)))
 
-            if sceneNumber > 30:
-                sceneNumber = 0
-                self.oscEndpoint.sendMessage(sceneBundle)
-                sceneBundle = OSC.OSCBundle()
-            else:
-                sceneNumber += 1
-
-        #fullBundle.append(sceneBundle)
-        sceneBundle.append(OSC.OSCMessage("/scan/scenes/end"))
-        self.oscEndpoint.sendMessage(sceneBundle)
+            self.oscEndpoint.sendMessage(sceneBundle)
+            self.oscEndpoint.sendMessage(OSC.OSCMessage("/song/" + songID + "/scene/" + sceneID + "/end/"))
+            
+            sceneNumber += 1
+        self.oscEndpoint.sendMessage(OSC.OSCMessage("/song/" + songID + "/end/"))
         return
 
     def scanSceneClips(self, msg, source):
         
         scene = LiveUtils.getScene(int(msg[2]))
-
-        clipBundle = OSC.OSCBundle()
-        clipBundle.append(OSC.OSCMessage("/scan/clips/start"))
+        oscEndpoint.sendMessage(OSC.OSCMessage("/clips/start"))
         slotNumber = 0
         for slot in scene.clip_slots:
+            clipBundle = OSC.OSCBundle()
             clip = slot.clip
             scanID = CLIP_IDENTIFIER + self.makeID()
             if clip is None:
@@ -189,17 +214,20 @@ class Scan:
                     slot.clip.name = "<!LC>" + scanID
             clip = slot.clip
             if clip is not None:
+                clipBundle.append(OSC.OSCMessage("/clip/start"))
                 if (clip.name.find(CLIP_IDENTIFIER) == -1):
                     clip.name = clip.name + scanID
                 
                 warping = True if clip.is_midi_clip else clip.warping
                 arguments = (slotNumber, str(clip.name), int(clip.length), str(warping), str(clip.looping), int(clip.loop_start), int(clip.loop_end), int(clip.signature_numerator), int(clip.signature_denominator))
-                clipBundle.append(OSC.OSCMessage("/scan/clips", arguments))
+                clipBundle.append(OSC.OSCMessage("/clip", arguments))
+                clipBundle.append(OSC.OSCMessage("/clip/end"))
+                oscEndpoint.sendMessage(clipBundle)
                 foundClip = True
 
             slotNumber = slotNumber + 1
-        clipBundle.append(OSC.OSCMessage("/scan/clips/end"))
-        self.oscEndpoint.send(clipBundle)
+        oscEndpoint.sendMessage(OSC.OSCMessage("/clips/end"))
+        #self.oscEndpoint.send(clipBundle)
         return
 
 

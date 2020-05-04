@@ -93,6 +93,12 @@ def getTempo():
     """Returns the current song tempo"""
     return getSong().tempo
 
+def getNumerator():
+    return getSong().signature_numerator
+
+def getDenominator():
+    return getSong().signature_denominator
+
 def setTempo(tempo):
     getSong().tempo = tempo
 

@@ -71,9 +71,9 @@ class LiveOSCCallbacks:
         self.callbackManager.add("/global/stopclips", self.stopAllClipsCB)
         self.callbackManager.add("/global/metronome", self.metronomeCB)
 
+        self.callbackManager.add("/server/ping", self.serverPing)
 
-        self.callbackManager.add("/scan/tracks", self.scan.scanTracks)
-        self.callbackManager.add("/scan/scenes", self.scan.scanScenes)
+        self.callbackManager.add("/scan/song", self.scan.scanScenes)
         self.callbackManager.add("/scan", self.scan.scanSession)
 
         ###################################################################################################################
@@ -190,7 +190,8 @@ class LiveOSCCallbacks:
 
         self.clip_notes_cache = {}
 
-    
+    def serverPing(self, msg, source):
+        self.oscEndpoint.send("/server/running", 1)
 
     def tempoCB(self, msg, source):
         """Called when a /tempo message is received.

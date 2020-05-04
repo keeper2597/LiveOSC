@@ -73,7 +73,7 @@ class LiveOSC:
       
         self.basicAPI = 0       
         self.oscEndpoint = RemixNet.OSCEndpoint()
-        self.oscEndpoint.send('/server/startup', 1)
+        self.oscEndpoint.send('/server/running', 1)
         
         log("LiveControl initialized")
 
@@ -160,7 +160,7 @@ class LiveOSC:
                 self.time = 0
                 doc.add_current_song_time_listener(self.current_song_time_changed)
             except Exception, e:
-                self.oscEndpoint.send('/server', 'setting up basicAPI failed: %s' % e)
+                self.oscEndpoint.send('/server/error', 'setting up basicAPI failed: %s' % e)
                 log('setting up basicAPI failed: %s' % e);
                 return
             
