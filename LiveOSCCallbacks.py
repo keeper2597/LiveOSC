@@ -55,21 +55,21 @@ class LiveOSCCallbacks:
         
 
         ###################################################################################################################
-        #######################################      GLOBAL                  ##############################################
+        #######################################      SESSION                  ##############################################
         ###################################################################################################################
 
-        self.callbackManager.add("/global/tempo", self.tempoCB)
-        self.callbackManager.add("/global/time", self.timeCB)
-        self.callbackManager.add("/global/quantization", self.quantizationCB)
-        self.callbackManager.add("/global/selection", self.selectionCB)
-        self.callbackManager.add("/global/undo", self.undoCB)
-        self.callbackManager.add("/global/redo", self.redoCB)
-        self.callbackManager.add("/global/play", self.playCB)
-        self.callbackManager.add("/global/continue", self.playContinueCB)
-        self.callbackManager.add("/global/playselection", self.playSelectionCB)  
-        self.callbackManager.add("/global/stop", self.stopCB)
-        self.callbackManager.add("/global/stopclips", self.stopAllClipsCB)
-        self.callbackManager.add("/global/metronome", self.metronomeCB)
+        self.callbackManager.add("/session/tempo", self.tempoCB)
+        self.callbackManager.add("/session/time", self.timeCB)
+        self.callbackManager.add("/session/quantization", self.quantizationCB)
+        self.callbackManager.add("/session/selection", self.selectionCB)
+        self.callbackManager.add("/session/undo", self.undoCB)
+        self.callbackManager.add("/session/redo", self.redoCB)
+        self.callbackManager.add("/session/play", self.playCB)
+        self.callbackManager.add("/session/continue", self.playContinueCB)
+        self.callbackManager.add("/session/playselection", self.playSelectionCB)  
+        self.callbackManager.add("/session/stop", self.stopCB)
+        self.callbackManager.add("/session/stopclips", self.stopAllClipsCB)
+        self.callbackManager.add("/session/metronome", self.metronomeCB)
 
         self.callbackManager.add("/server/ping", self.serverPing)
 
@@ -201,7 +201,7 @@ class LiveOSCCallbacks:
         /tempo (float tempo)   Set the tempo, replies with /tempo (float tempo)
         """
         if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
-            self.oscEndpoint.send("/global/tempo", LiveUtils.getTempo())
+            self.oscEndpoint.send("/session/tempo", LiveUtils.getTempo())
         
         elif len(msg) == 3:
             tempo = msg[2]
@@ -215,7 +215,7 @@ class LiveOSCCallbacks:
         /time (float time)    Set the time , replies with /time (float time)
         """
         if len(msg) == 2 or (len(msg) == 3 and msg[2] == "query"):
-            self.oscEndpoint.send("/global/time", float(LiveUtils.currentTime()))
+            self.oscEndpoint.send("/session/time", float(LiveUtils.currentTime()))
 
         elif len(msg) == 3:
             time = msg[2]

@@ -383,7 +383,7 @@ class LiveOSC:
             self.song().remove_is_playing_listener(self.transport_change)    
     
     def transport_change(self):
-        self.oscEndpoint.send("/global/play", (self.song().is_playing and 2 or 1))
+        self.oscEndpoint.send("/session/play", (self.song().is_playing and 1 or 0))
     
     def add_overdub_listener(self):
         self.rem_overdub_listener()
