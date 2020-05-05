@@ -32,6 +32,9 @@ def continuePlaying():
     """Continues Playing"""
     getSong().continue_playing()
 
+def isPlaying():
+    return getSong().is_playing
+
 def playSelection():
     """Plays the current selection"""
     getSong().play_selection()

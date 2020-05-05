@@ -70,6 +70,7 @@ class LiveOSCCallbacks:
         self.callbackManager.add("/session/stop", self.stopCB)
         self.callbackManager.add("/session/stopclips", self.stopAllClipsCB)
         self.callbackManager.add("/session/metronome", self.metronomeCB)
+        self.callbackManager.add("/session/status", self.statusPing)
 
         self.callbackManager.add("/server/ping", self.serverPing)
 
@@ -192,6 +193,14 @@ class LiveOSCCallbacks:
 
     def serverPing(self, msg, source):
         self.oscEndpoint.send("/server/running", 1)
+
+    def statusPing(self, msg, source):
+        tempo = LiveUtils.getTempo()
+        #time = LiveUtils.getSong().get_current_beats_song_time()
+        isPlaying = LiveUtils.isPlaying() and 1 or 0
+        numerator = LiveUtils.getNumerator()
+        denominator = LiveUtils.getDenominator()
+        self.oscEndpoint.send("/session/status", (tempo, isPlaying, numerator, denominator))
 
     def tempoCB(self, msg, source):
         """Called when a /tempo message is received.
