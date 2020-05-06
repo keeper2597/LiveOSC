@@ -32,15 +32,19 @@ class Scan:
         return ''.join(random.choice(lettersAndDigits) for i in range(stringLength))
 
     def scanSession(self, msg, source):
-        #/scenes                            Returns a a series of all the scene names in the form /scene/name (int scene, string name)
+        #/scenes                            Returns a series of all the scene names in the form /scene/name (int scene, string name)
         log("scanSession called")
         log(msg)
         songID = msg[2]
         self.addControlTrack()
         self.scanSongTracks(songID)
         self.scanScenes(songID)
-        self.addControlClips()
+        self.addControlClips(songID)
         return
+
+    def scanSongs(self):
+        songIDs = self.loadedSongs()
+        self.oscEndpoint.sendMessage(OSC.OSCMessage("/session/songs/", songIDs))
 
     def addControlTrack(self):
         #check for LiveControl listener track
@@ -51,7 +55,7 @@ class Scan:
             controlTrack.name = CONTROL_TRACK_IDENTIFIER
             controlTrack.mute = 1
    
-    def addControlClips(self):
+    def addControlClips(self, songID):
         controlTrack = LiveUtils.getTrack(0)
         slotNumber = 0
         for slot in controlTrack.clip_slots:
@@ -69,8 +73,23 @@ class Scan:
                 slot.clip.signature_numerator = signature_numerator
                 slot.clip.signature_denominator = signature_denominator
                 slot.length = length
-                slot.clip.name = CONTROL_CLIP_IDENTIFIER
+                slot.clip.name = CONTROL_CLIP_IDENTIFIER + " " + songID
             slotNumber = slotNumber + 1
+
+    def loadedSongs(self):
+        controlHashes = []
+        controlTrack = LiveUtils.getTrack(0)
+        for slot in controlTrack.clip_slots:
+            log("hello")
+            if slot.has_clip:
+                slotName = slot.clip.name
+                nameParts = slotName.split(CONTROL_CLIP_IDENTIFIER)
+                for part in nameParts:                
+                    songID = nameParts[1].strip()
+                if not songID in controlHashes:
+                    controlHashes.append(str(songID))
+        return controlHashes
+
 
     """
     def scanTracks(self, msg, source):
