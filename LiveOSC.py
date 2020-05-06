@@ -181,7 +181,7 @@ class LiveOSC:
         index = LiveUtils.getTrack(LIVE_CONTROL_TRACK).playing_slot_index
         if index != -1:
             scene = LiveUtils.getScene(index)
-            idIndex = scene.name.find(LiveOSCCallbacks.sceneIdentifier)
+            idIndex = scene.name.find(" #cS")
             if idIndex != -1:
                 sceneID = scene.name[idIndex:]
                 log(sceneID)
