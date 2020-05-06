@@ -80,7 +80,6 @@ class Scan:
         controlHashes = []
         controlTrack = LiveUtils.getTrack(0)
         for slot in controlTrack.clip_slots:
-            log("hello")
             if slot.has_clip:
                 slotName = slot.clip.name
                 nameParts = slotName.split(CONTROL_CLIP_IDENTIFIER)
