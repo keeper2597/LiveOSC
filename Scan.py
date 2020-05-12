@@ -21,6 +21,10 @@ CLIP_IDENTIFIER = " #cC"
 CONTROL_TRACK_IDENTIFIER = "<!LCONTROL>"
 CONTROL_CLIP_IDENTIFIER = "<!LC>"
 
+def findName(objectName, removeString):
+        parts = objectName.split(removeString)
+        return parts[1].strip()
+
 
 class Scan:
     def __init__(self, oscEndpoint):
@@ -41,6 +45,15 @@ class Scan:
         self.scanScenes(songID)
         self.addControlClips(songID)
         return
+
+    def scanMulti(self, msg, source):
+        self.oscEndpoint.sendMessage(OSC.OSCMessage("/multi/start/" + msg[2]))
+        index = 0
+        for scene in LiveUtils.getSong().scenes:
+            self.oscEndpoint.sendMessage(OSC.OSCMessage("/multi/section" + msg[2]), ( int(index), str(scene.is_empty), str(scene.name), float(scene.tempo) ))
+            index += 1
+        self.oscEndpoint.sendMessage(OSC.OSCMessage("/multi/end" + msg[2]))
+
 
     def scanSongs(self):
         songIDs = self.loadedSongs()
@@ -81,13 +94,21 @@ class Scan:
         controlTrack = LiveUtils.getTrack(0)
         for slot in controlTrack.clip_slots:
             if slot.has_clip:
-                slotName = slot.clip.name
-                nameParts = slotName.split(CONTROL_CLIP_IDENTIFIER)
-                for part in nameParts:                
-                    songID = nameParts[1].strip()
+                #slotName = slot.clip.name
+                #nameParts = slotName.split(CONTROL_CLIP_IDENTIFIER)
+                songID = findName(slot.clip.name, CONTROL_CLIP_IDENTIFIER)
                 if not songID in controlHashes:
                     controlHashes.append(str(songID))
         return controlHashes
+
+    def trimSong(self, msg source):
+        sceneCount = 0
+        sceneLength = LiveUtils.getSong().scenes.length
+        while sceneCount < sceneLength:
+            if sceneCount < int(msg[2]) && sceneCount > int(msg[3]):
+                LiveUtils.getSong().delete_scene(sceneCount)
+        self.oscEndpoint.sendMessage(OSC.OSCMessage("/trim/"))
+
 
 
     """

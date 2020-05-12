@@ -34,6 +34,7 @@ import OSC
 import LiveUtils
 import ClipMonitor
 import sys
+import Scan
 from Logger import log
 
 debug = LiveUtils.debug
@@ -178,14 +179,17 @@ class LiveOSC:
         ######################################################
 
     def send_playing_scene_id(self):
-        index = LiveUtils.getTrack(LIVE_CONTROL_TRACK).playing_slot_index
+        track = LiveUtils.getTrack(LIVE_CONTROL_TRACK)
+        index = track.playing_slot_index
         if index != -1:
+            songID = Scan.findName(track.clip_slots[index].clip.name, CONTROL_CLIP_IDENTIFIER)
             scene = LiveUtils.getScene(index)
             idIndex = scene.name.find(" #cS")
             if idIndex != -1:
                 sceneID = scene.name[idIndex:]
-                log(sceneID)
-                self.oscEndpoint.send("/scene/playing", (index, str(sceneID)))
+                #log(sceneID)
+                self.oscEndpoint.send("/session/playing", (index, str(sceneID), str(songID)))
+
 
     def current_song_time_changed(self):
         time = self.song().current_song_time
