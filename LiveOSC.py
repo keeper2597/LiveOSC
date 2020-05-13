@@ -253,7 +253,8 @@ class LiveOSC:
 
 ######################################################################
 # Used Ableton Methods
-    def remove_listeners(self):
+
+    def disconnect(self):
         #self.rem_clip_listeners()
         #self.rem_mixer_listeners()
         self.rem_scene_listeners()
@@ -264,9 +265,6 @@ class LiveOSC:
         self.rem_transport_listener()
         self.rem_metronome_listener()
         #self.song().remove_tracks_listener(self.refresh_state)
-
-    def disconnect(self):
-        self.remove_listeners()
         self.oscEndpoint.send('/server/shutdown', 1)
         self.oscEndpoint.shutdown()
             
