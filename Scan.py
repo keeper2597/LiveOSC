@@ -47,7 +47,7 @@ class Scan:
         return
 
     def scanMulti(self, msg, source):
-        
+
         self.oscEndpoint.sendMessage(OSC.OSCMessage("/multi/start/"))
         index = 0
         for scene in LiveUtils.getSong().scenes:
@@ -102,13 +102,20 @@ class Scan:
         return controlHashes
 
     def trimSong(self, msg, source):
-        sceneCount = 0
-        sceneLength = LiveUtils.getSong().scenes.length
-        while sceneCount < sceneLength:
-            if sceneCount < int(msg[2]) and sceneCount > int(msg[3]):
-                LiveUtils.getSong().delete_scene(sceneCount)
-        self.oscEndpoint.sendMessage(OSC.OSCMessage("/trim/"))
+        sceneCount = int(0)
+        song = LiveUtils.getSong()
+        sceneLength = len(song.scenes) - 1
+        #Live.remove_listeners()
+        for scene in song.scenes:
+            log(sceneLength)
+            if sceneLength <= int(msg[2]) or sceneLength > int(msg[3]):
+                log("Deleted!!")
+                song.delete_scene(sceneLength)
+                time.sleep(0.2)
 
+            sceneLength -= 1
+        self.oscEndpoint.sendMessage(OSC.OSCMessage("/multi/trimmed/"))
+        #Live.refresh_state()
 
 
     """
