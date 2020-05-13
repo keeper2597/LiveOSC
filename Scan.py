@@ -47,13 +47,13 @@ class Scan:
         return
 
     def scanMulti(self, msg, source):
-        self.oscEndpoint.sendMessage(OSC.OSCMessage("/multi/start/" + msg[2]))
+        
+        self.oscEndpoint.sendMessage(OSC.OSCMessage("/multi/start/"))
         index = 0
         for scene in LiveUtils.getSong().scenes:
-            self.oscEndpoint.sendMessage(OSC.OSCMessage("/multi/section" + msg[2]), ( int(index), str(scene.is_empty), str(scene.name), float(scene.tempo) ))
+            self.oscEndpoint.sendMessage(OSC.OSCMessage("/multi/section/", ( int(index), str(scene.is_empty), str(scene.name), float(scene.tempo) )))
             index += 1
-        self.oscEndpoint.sendMessage(OSC.OSCMessage("/multi/end" + msg[2]))
-
+        self.oscEndpoint.sendMessage(OSC.OSCMessage("/multi/end/"))
 
     def scanSongs(self):
         songIDs = self.loadedSongs()

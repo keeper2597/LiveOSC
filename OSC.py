@@ -282,7 +282,7 @@ class CallbackManager:
 		address = message[0]
 		try:
 			self.callbacks[address](message, source)
-			#log("Callback for %s initiated." % address)
+			log("Callback for %s initiated." % address)
 		except Exception, e:
 			log("Callback failed: %s" % e)
 			import traceback
