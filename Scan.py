@@ -101,11 +101,11 @@ class Scan:
                     controlHashes.append(str(songID))
         return controlHashes
 
-    def trimSong(self, msg source):
+    def trimSong(self, msg, source):
         sceneCount = 0
         sceneLength = LiveUtils.getSong().scenes.length
         while sceneCount < sceneLength:
-            if sceneCount < int(msg[2]) && sceneCount > int(msg[3]):
+            if sceneCount < int(msg[2]) and sceneCount > int(msg[3]):
                 LiveUtils.getSong().delete_scene(sceneCount)
         self.oscEndpoint.sendMessage(OSC.OSCMessage("/trim/"))
 

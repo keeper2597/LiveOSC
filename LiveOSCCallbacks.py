@@ -77,7 +77,7 @@ class LiveOSCCallbacks:
 
         self.callbackManager.add("/scan/song", self.scan.scanScenes)
         self.callbackManager.add("/scan", self.scan.scanSession)
-        self.callbackManager.add("/multi", self.scan.multiScan)
+        self.callbackManager.add("/multi", self.scan.scanMulti)
         self.callbackManager.add("/trimSong", self.scan.trimSong)
 
         ###################################################################################################################
