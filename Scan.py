@@ -108,10 +108,10 @@ class Scan:
         #Live.remove_listeners()
         for scene in song.scenes:
             log(sceneLength)
-            if sceneLength <= int(msg[2]) or sceneLength > int(msg[3]):
+            if sceneLength < int(msg[2]) or sceneLength > int(msg[3]):
                 log("Deleted!!")
                 song.delete_scene(sceneLength)
-                time.sleep(0.2)
+                #time.sleep(0.1)
 
             sceneLength -= 1
         self.oscEndpoint.sendMessage(OSC.OSCMessage("/multi/trimmed/"))
